@@ -1,4 +1,4 @@
-package com.accenture.ai.controller;
+package com.accenture.ai.controller.aligenie;
 
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
