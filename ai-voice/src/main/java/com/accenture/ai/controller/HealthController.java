@@ -13,9 +13,9 @@ public class HealthController {
 		return HEALTH_MESSAGE;
 	}
 	
-	@GetMapping("/")
+	/*@GetMapping("/")
 	public String hello() {
 		return HEALTH_MESSAGE;
-	}
+	}*/
 }
 
