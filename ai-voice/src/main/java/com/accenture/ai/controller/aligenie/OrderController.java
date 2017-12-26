@@ -34,7 +34,7 @@ public class OrderController {
 		ResultModel<TaskResult> resultModel = new ResultModel<TaskResult>();
 
 		try {
-			// test content
+			// HelloWorldSpeechletTest content
 			TaskResult result = new TaskResult();
 			String count = query.getRequestData().get("count");
 			String product = query.getRequestData().get("product");
