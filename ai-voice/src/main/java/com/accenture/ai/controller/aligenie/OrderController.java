@@ -1,5 +1,6 @@
 package com.accenture.ai.controller.aligenie;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -7,7 +8,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.accenture.ai.logging.LogAgent;
-import com.alibaba.da.coin.ide.spi.meta.ResultType;
+import com.accenture.ai.service.aligenie.POCService;
 import com.alibaba.da.coin.ide.spi.standard.ResultModel;
 import com.alibaba.da.coin.ide.spi.standard.TaskQuery;
 import com.alibaba.da.coin.ide.spi.standard.TaskResult;
@@ -23,25 +24,21 @@ public class OrderController {
 
 	private static final LogAgent LOGGER = LogAgent.getLogAgent(OrderController.class);
 	
+	@Autowired
+	private POCService pocService;
+	
 	@RequestMapping(path = "/placeorder", method = { RequestMethod.POST })
 	@ResponseBody
-	public ResultModel<TaskResult> getResponse(@RequestBody String taskQuery) {
+	public ResultModel<TaskResult> placeOrder(@RequestBody String taskQuery) {
 		// parse json to taskquery
 		LOGGER.info("TaskQuery:{}", taskQuery.toString());
 		TaskQuery query = MetaFormat.parseToQuery(taskQuery);
-
 		// prepare result
 		ResultModel<TaskResult> resultModel = new ResultModel<TaskResult>();
 
 		try {
-			// HelloWorldSpeechletTest content
-			TaskResult result = new TaskResult();
-			String count = query.getRequestData().get("count");
-			String product = query.getRequestData().get("product");
-			result.setReply(count + product + "购买成功");
-			result.setResultType(ResultType.RESULT);
 			resultModel.setReturnCode("0");
-			resultModel.setReturnValue(result);
+			resultModel.setReturnValue(pocService.pocHandle(query));
 		} catch (Exception e) {
 			resultModel.setReturnCode("-1");
 			resultModel.setReturnErrorSolution(e.getMessage());

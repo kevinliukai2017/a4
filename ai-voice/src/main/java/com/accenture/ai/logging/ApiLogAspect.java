@@ -24,7 +24,7 @@ public class ApiLogAspect {
 	private static final LogAgent LOGGER = LogAgent.getLogAgent(ApiLogAspect.class);
 	private static final Gson GSON = new Gson();
 
-	@Pointcut("execution(* com.accenture.ai.controller.*.*(..))")
+	@Pointcut("execution(* com.accenture.ai.controller..*.*(..))")
 	private void controllerAspect() {
 	}
 
