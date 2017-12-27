@@ -1,4 +1,4 @@
-package com.accenture.ai.alexa;
+package com.accenture.ai.controller.alexa;
 
 import com.amazon.speech.slu.Intent;
 import com.amazon.speech.speechlet.*;
