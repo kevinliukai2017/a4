@@ -24,7 +24,15 @@ public class POCService {
 		TaskResult result = new TaskResult();
 		String count = paramMap.get("count");
 		String product = paramMap.get("product");
-		result.setReply(count + " " +  product + "购买成功");
+		String replyValue = "";
+		if("洗衣粉".equals(product)){
+			replyValue = "您是想购买蓝月亮洗衣粉还是好爸爸洗衣粉";
+		}
+		
+		if("蓝月亮洗衣粉".equals(product) || "好爸爸洗衣粉".equals(product)){
+			replyValue = count + " " +  product + " 购买成功";
+		}
+		result.setReply(replyValue);
 		result.setResultType(ResultType.RESULT);
 		LOGGER.info("pocHandle end --------------");
 		return result;
