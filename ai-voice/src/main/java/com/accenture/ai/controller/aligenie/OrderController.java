@@ -7,6 +7,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.accenture.ai.constant.AIConstants;
 import com.accenture.ai.logging.LogAgent;
 import com.accenture.ai.service.aligenie.POCService;
 import com.alibaba.da.coin.ide.spi.standard.ResultModel;
@@ -37,10 +38,10 @@ public class OrderController {
 		ResultModel<TaskResult> resultModel = new ResultModel<TaskResult>();
 
 		try {
-			resultModel.setReturnCode("0");
+			resultModel.setReturnCode(AIConstants.ALIGENIE_RETURN_SUCCESS);
 			resultModel.setReturnValue(pocService.pocHandle(query));
 		} catch (Exception e) {
-			resultModel.setReturnCode("-1");
+			resultModel.setReturnCode(AIConstants.ALIGENIE_RETURN_FAIL);
 			resultModel.setReturnErrorSolution(e.getMessage());
 		}
 
