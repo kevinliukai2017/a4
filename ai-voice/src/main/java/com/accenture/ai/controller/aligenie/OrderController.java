@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.accenture.ai.constant.AIConstants;
 import com.accenture.ai.logging.LogAgent;
-import com.accenture.ai.service.aligenie.POCService;
+import com.accenture.ai.service.aligenie.POCServiceImpl;
 import com.alibaba.da.coin.ide.spi.standard.ResultModel;
 import com.alibaba.da.coin.ide.spi.standard.TaskQuery;
 import com.alibaba.da.coin.ide.spi.standard.TaskResult;
@@ -26,7 +26,7 @@ public class OrderController {
 	private static final LogAgent LOGGER = LogAgent.getLogAgent(OrderController.class);
 	
 	@Autowired
-	private POCService pocService;
+	private POCServiceImpl pocService;
 	
 	@RequestMapping(path = "/placeorder", method = { RequestMethod.POST })
 	@ResponseBody
