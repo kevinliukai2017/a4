@@ -32,7 +32,11 @@ public class OrderCountPOCServiceImpl extends AbstractAligenieService{
 		String month = paramMap.get("month");
 		String replyValue = orderService.getOrderCount(month, orderStatus);
 		result.setReply(replyValue);
-		result.setResultType(ResultType.RESULT);
+		if("正常".equals(orderStatus)){
+			result.setResultType(ResultType.ASK_INF);
+		}else{
+			result.setResultType(ResultType.RESULT);
+		}
 		LOGGER.info("orderCountPOC end --------------");
 		return result;
 	}
