@@ -14,6 +14,7 @@ import com.accenture.ai.service.aligenie.ProductSummaryPOCServiceImpl;
 import com.accenture.ai.service.aligenie.SalesSummaryPOCServiceImpl;
 import com.accenture.ai.service.aligenie.TechnologyPOCServiceImpl;
 import com.accenture.ai.service.aligenie.TopDealerPOCServiceImpl;
+import com.accenture.ai.service.aligenie.WebSocketServiceImpl;
 import com.alibaba.da.coin.ide.spi.standard.ResultModel;
 import com.alibaba.da.coin.ide.spi.standard.TaskQuery;
 import com.alibaba.da.coin.ide.spi.standard.TaskResult;
@@ -44,6 +45,9 @@ public class MonitorController {
 	@Autowired
 	private ProductSummaryPOCServiceImpl productSummaryPOCServiceImpl;
 	
+	@Autowired
+	private WebSocketServiceImpl webSocketServiceImpl;
+	
 	@RequestMapping(path = "/salesSummary", method = { RequestMethod.POST })
 	@ResponseBody
 	public ResultModel<TaskResult> salesSummary(@RequestBody String taskQuery) {
@@ -60,6 +64,9 @@ public class MonitorController {
 			resultModel.setReturnCode(AIConstants.ALIGENIE_RETURN_FAIL);
 			resultModel.setReturnErrorSolution(e.getMessage());
 		}
+		
+		//send contex to customer client
+		webSocketServiceImpl.sendContexToClient();
 
 		return resultModel;
 	}
@@ -80,6 +87,10 @@ public class MonitorController {
 			resultModel.setReturnCode(AIConstants.ALIGENIE_RETURN_FAIL);
 			resultModel.setReturnErrorSolution(e.getMessage());
 		}
+		
+		//send contex to customer client
+		//webSocketServiceImpl.sendContexToClient();
+		
 		return resultModel;
 	}
 	
@@ -99,6 +110,9 @@ public class MonitorController {
 			resultModel.setReturnCode(AIConstants.ALIGENIE_RETURN_FAIL);
 			resultModel.setReturnErrorSolution(e.getMessage());
 		}
+		
+		//send contex to customer client
+		webSocketServiceImpl.sendContexToClient();
 
 		return resultModel;
 	}
@@ -119,6 +133,9 @@ public class MonitorController {
 			resultModel.setReturnCode(AIConstants.ALIGENIE_RETURN_FAIL);
 			resultModel.setReturnErrorSolution(e.getMessage());
 		}
+		
+		//send contex to customer client
+		webSocketServiceImpl.sendContexToClient();
 
 		return resultModel;
 	}
@@ -139,6 +156,9 @@ public class MonitorController {
 			resultModel.setReturnCode(AIConstants.ALIGENIE_RETURN_FAIL);
 			resultModel.setReturnErrorSolution(e.getMessage());
 		}
+		
+		//send contex to customer client
+		webSocketServiceImpl.sendContexToClient();
 
 		return resultModel;
 	}

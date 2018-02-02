@@ -3,9 +3,11 @@ package com.accenture.ai.service.aligenie;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.accenture.ai.logging.LogAgent;
+import com.accenture.ai.utils.SocketStatusContex;
 import com.alibaba.da.coin.ide.spi.meta.ResultType;
 import com.alibaba.da.coin.ide.spi.standard.TaskQuery;
 import com.alibaba.da.coin.ide.spi.standard.TaskResult;
@@ -14,6 +16,9 @@ import com.alibaba.da.coin.ide.spi.standard.TaskResult;
 public class TechnologyPOCServiceImpl extends AbstractAligenieService{
 	
 	private static final LogAgent LOGGER = LogAgent.getLogAgent(TechnologyPOCServiceImpl.class);
+	
+	@Autowired  
+	SocketStatusContex socketStatusContex;
 	
 	@Override
 	public TaskResult handle(TaskQuery taskQuery) {
@@ -38,6 +43,9 @@ public class TechnologyPOCServiceImpl extends AbstractAligenieService{
 		} else if ("内存".equals(period)){
 			replyValue = "现在系统内存占用率为百分之二十一，情况稳定";
 		}
+		
+		socketStatusContex.setTitleAndUrl("服务器信息", "/websocket/technologyFrame");
+		
 		result.setReply(replyValue);
 		result.setResultType(ResultType.RESULT);
 		LOGGER.info("technologyPOC end --------------");

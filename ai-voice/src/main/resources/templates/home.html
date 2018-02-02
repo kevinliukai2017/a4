@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>门户信息平台</title>
+<script src="//cdn.bootcss.com/angular.js/1.5.6/angular.min.js"></script>
+<script src="https://cdn.bootcss.com/sockjs-client/1.1.4/sockjs.min.js"></script>
+<script src="https://cdn.bootcss.com/stomp.js/2.3.3/stomp.min.js"></script>
+<script type="text/javascript">
+	/*<![CDATA[*/
+
+	var stompClient = null;
+	var socket = null;
+
+	var websocket = angular.module('websocket', []);
+	websocket.controller('MainController', function($rootScope, $scope, $http) {
+
+		$scope.data = {
+			//连接状态
+			status : 0,
+			//消息
+			server : {
+				title : '欢迎光临门户信息系统',
+				url : '/websocket/defaultFrame',
+			}
+		};
+
+		//连接
+		$scope.connect = function() {
+			socket = new SockJS('/my-websocket');
+			stompClient = Stomp.over(socket);
+			stompClient.connect({}, function(frame) {
+				// 注册发送消息
+				stompClient.subscribe('/topic/send', function(msg) {
+					console.log("/topic/send, response" + msg.body);
+					$scope.data.status = 1;
+					$scope.$apply();
+				});
+				
+				// 注册推送时间回调
+				stompClient.subscribe('/topic/callback', function(msg) {
+					console.log("/topic/callback, response" + msg.body);
+					$scope.handleServerStatus(msg);
+					$scope.data.status = 1;
+					$scope.$apply();
+				});
+
+				$scope.data.status = 1;
+				$scope.$apply();
+			});
+		};
+		
+		$scope.handleServerStatus = function(msg) {
+			var formatedMsg = JSON.parse(msg.body);
+			if (formatedMsg.url != $scope.data.server.url || formatedMsg.title != $scope.data.server.title) {
+				$scope.data.server.url = formatedMsg.url;
+				$scope.data.server.title = formatedMsg.title;
+				$scope.$apply();
+			}
+		}
+
+		$scope.disconnect = function() {
+			if (stompClient != null) {
+				stompClient.disconnect();
+			}
+			$scope.data.status = 2;
+		}
+
+		$scope.send = function() {
+			stompClient.send("/websocket/send", {}, JSON.stringify({
+				'message' : $scope.data.message
+			}));
+		}
+		
+		
+
+		setTimeout(function(){
+			$scope.connect();
+			if(socket != null){
+				socket.onclose = function()
+		        { 
+		           // 关闭 websocket
+			        	console.log("=======closed=======");
+			        	$scope.data.status = 2;
+			        	$scope.$apply();
+		        };
+			}
+		}, 0);
+		
+	});
+	
+	function changeFrameHeight(){
+        var ifm= document.getElementById("mainiframe");
+        ifm.height=document.documentElement.clientHeight;
+    }
+	
+    window.onresize = function(){ 
+    		changeFrameHeight();
+    	}
+    
+    	$(function(){
+    		changeFrameHeight();
+    	});
+	
+
+	/*]]>*/
+</script>
+</head>
+<body ng-app="websocket" ng-controller="MainController" style="background-color: #252830;">
+
+	<div class= "title" ng-show="data.showTitle">
+		<label>门户信息平台:</label>
+		<div ng-show="data.status == 0">正在连接系统，请稍等...</div>
+		<div ng-show="data.status == 1">已连接系统!</div>
+		<div ng-show="data.status == 2">连接已关闭!</div>
+		<br />
+		<br />
+	</div>
+	
+	<div ng-show="data.status == 1 && data.server.url != ''">
+		<iframe id="mainiframe" ng-src="{{data.server.url}}" name="mainiframe" width="100%" onload="this.height=mainiframe.document.body.scrollHeight" frameborder="0"></iframe>
+	</div>
+</body>
+</html>

@@ -3,9 +3,11 @@ package com.accenture.ai.service.aligenie;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.accenture.ai.logging.LogAgent;
+import com.accenture.ai.utils.SocketStatusContex;
 import com.alibaba.da.coin.ide.spi.meta.ResultType;
 import com.alibaba.da.coin.ide.spi.standard.TaskQuery;
 import com.alibaba.da.coin.ide.spi.standard.TaskResult;
@@ -14,6 +16,9 @@ import com.alibaba.da.coin.ide.spi.standard.TaskResult;
 public class ProductSummaryPOCServiceImpl extends AbstractAligenieService{
 	
 	private static final LogAgent LOGGER = LogAgent.getLogAgent(POCServiceImpl.class);
+	
+	@Autowired  
+	SocketStatusContex socketStatusContex;
 	
 	@Override
 	public TaskResult handle(TaskQuery taskQuery) {
@@ -32,6 +37,9 @@ public class ProductSummaryPOCServiceImpl extends AbstractAligenieService{
 		} else if ("季度销量".equals(period)){
 			replyValue = "好的，季度销量最好的产品为立白洗洁精";
 		}
+		
+		socketStatusContex.setTitleAndUrl("经销商销量信息", "/websocket/productSalesFrame");
+		
 		result.setReply(replyValue);
 		result.setResultType(ResultType.RESULT);
 		LOGGER.info("productSummaryPOC end --------------");
