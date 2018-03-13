@@ -9,7 +9,9 @@ import java.util.stream.Collectors;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
 
+import com.accenture.ai.dto.ArticleDTO;
 import com.accenture.ai.logging.LogAgent;
 import com.accenture.ai.utils.IKAnalyzerUtil;
 import com.accenture.ai.utils.NumberUtil;
@@ -48,7 +50,7 @@ public class SmartDevicePOCServiceImpl extends AbstractAligenieService {
 			result.setResultType(ResultType.RESULT);
 		} else if (isSecond(any)) {
 			int index = NumberUtil.chineseNumber2Int(any);
-
+			LOGGER.info("index is:" + index);
 			result.setReply(getDetailAnswer(taskQuery, index));
 			result.setResultType(ResultType.RESULT);
 		} else {
@@ -56,8 +58,8 @@ public class SmartDevicePOCServiceImpl extends AbstractAligenieService {
 				String splitWords = IKAnalyzerUtil.wordSplit(any);
 				LOGGER.info("分词结果:" + splitWords);
 				List<String> words = Arrays.asList(splitWords.split(","));
-				
-				result.setResultType(ResultType.ASK_INF);
+				List<ArticleDTO> articleDTOs = getArticles(words);
+				buildReply(result, articleDTOs);
 			} catch (IOException e) {
 				result.setReply("分词发生异常,请联系管理员");
 				result.setResultType(ResultType.RESULT);
@@ -66,11 +68,44 @@ public class SmartDevicePOCServiceImpl extends AbstractAligenieService {
 		}
 	}
 
+	private void buildReply(TaskResult result, List<ArticleDTO> articleDTOs) {
+		if (CollectionUtils.isEmpty(articleDTOs)) {
+			LOGGER.info("分词结果未在数据库查询到相关tag");
+			result.setReply("抱歉没有找到你想要的内容");
+			result.setResultType(ResultType.RESULT);
+		} else if (articleDTOs.size() == 1) {
+			// TODO
+			// help to redirect url by socket(content page)
+			result.setReply(articleDTOs.get(0).getContent());
+			result.setResultType(ResultType.RESULT);
+		} else {
+			String titles = "";
+			for (ArticleDTO articleDTO : articleDTOs) {
+				titles += articleDTO.getTitle() + ",";
+			}
+			// TODO 
+			// help to redirect url by socket(list page)
+			result.setReply(titles);
+			result.setResultType(ResultType.ASK_INF);
+		}
+	}
+
+	private List<ArticleDTO> getArticles(List<String> words) {
+		// TODO 
+		// help to get articles
+		return null;
+	}
+
 	private String getDetailAnswer(TaskQuery taskQuery, int index) {
 
 		ConversationRecord conversationRecord = taskQuery.getConversationRecords().stream().findFirst().orElse(null);
 		if (null != conversationRecord) {
 			List<String> answers = Arrays.asList(conversationRecord.getReplyUtterance().split(","));
+			if (index > answers.size()) {
+				return "请勿捣蛋";
+			}
+			// TODO 
+			// help to redirect url by socket(content page)
 			return answers.get(index - 1);
 		}
 		return "抱歉，未找到上下文，请重新查询";
