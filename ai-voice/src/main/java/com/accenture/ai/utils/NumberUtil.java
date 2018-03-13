@@ -3,6 +3,11 @@ package com.accenture.ai.utils;
 public class NumberUtil {
 	
 	public static int chineseNumber2Int(String chineseNumber) {
+
+		if (chineseNumber.matches("[0-9]+")) {
+			return Integer.valueOf(chineseNumber);
+		}
+
 		int result = 0;
 		int temp = 1;// 存放一个单位的数字如：十万
 		int count = 0;// 判断是否有chArr

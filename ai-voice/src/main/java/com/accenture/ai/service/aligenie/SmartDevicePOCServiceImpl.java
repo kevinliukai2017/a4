@@ -1,6 +1,7 @@
 package com.accenture.ai.service.aligenie;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -38,17 +39,18 @@ public class SmartDevicePOCServiceImpl extends AbstractAligenieService {
 		// test content
 		TaskResult result = new TaskResult();
 		String any = paramMap.get("any");
-		buildResult(taskQuery, result, any);
+		String sequence = paramMap.get("sequence");
+		buildResult(taskQuery, result, any,sequence);
 		LOGGER.info("SmartDevicePOCServiceImpl end --------------");
 		return result;
 	}
 
-	private void buildResult(TaskQuery taskQuery, TaskResult result, String any) {
+	private void buildResult(TaskQuery taskQuery, TaskResult result, String any, String sequence) {
 
-		if (StringUtils.isEmpty(any)) {
-			result.setReply("请告诉我你要干嘛，比如 天猫精灵 智能问答 如何填写时间成本");
+		if (StringUtils.isEmpty(any) && StringUtils.isEmpty(sequence)) {
+			result.setReply("请告诉我你要干嘛，比如 天猫精灵 请问智能问答 如何填写时间成本");
 			result.setResultType(ResultType.RESULT);
-		} else if (isSecond(any)) {
+		} else if (isSecond(sequence)) {
 			int index = NumberUtil.chineseNumber2Int(any);
 			LOGGER.info("index is:" + index);
 			result.setReply(getDetailAnswer(taskQuery, index));
@@ -93,7 +95,16 @@ public class SmartDevicePOCServiceImpl extends AbstractAligenieService {
 	private List<ArticleDTO> getArticles(List<String> words) {
 		// TODO 
 		// help to get articles
-		return null;
+		List<ArticleDTO> res = new ArrayList<ArticleDTO>();
+		ArticleDTO a = new ArticleDTO();
+		a.setTitle("公司机票怎么定");
+		a.setContent("公司机票怎么定");
+		ArticleDTO b = new ArticleDTO();
+		b.setTitle("公司有没有快消行业实施案例");
+		b.setContent("公司有没有快消行业实施案例");
+		res.add(a);
+		res.add(b);
+		return res;
 	}
 
 	private String getDetailAnswer(TaskQuery taskQuery, int index) {
@@ -111,7 +122,7 @@ public class SmartDevicePOCServiceImpl extends AbstractAligenieService {
 		return "抱歉，未找到上下文，请重新查询";
 	}
 
-	private boolean isSecond(String any) {
-		return any.startsWith("第");
+	private boolean isSecond(String sequence) {
+		return StringUtils.isNotEmpty(sequence);
 	}
 }
