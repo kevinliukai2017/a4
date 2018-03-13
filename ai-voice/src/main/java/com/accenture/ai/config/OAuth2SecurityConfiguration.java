@@ -49,7 +49,7 @@ public class OAuth2SecurityConfiguration extends WebSecurityConfigurerAdapter {
 
     @Override
 	protected void configure(HttpSecurity http) throws Exception {
-		http.csrf().disable().authorizeRequests().antMatchers("/_health", "/", "/websocket/**", "/oauth/**","/aligenie/v2/**").permitAll()
+		http.csrf().disable().authorizeRequests().antMatchers("/_health", "/", "/websocket/**", "/oauth/**","/aligenie/**").permitAll()
 				.anyRequest().authenticated();
 		http.formLogin().loginPage("/login").permitAll();
 		http.headers().frameOptions().disable();

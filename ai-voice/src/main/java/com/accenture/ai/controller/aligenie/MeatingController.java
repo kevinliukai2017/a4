@@ -31,7 +31,6 @@ public class MeatingController {
 	
 	@RequestMapping(path = "/recordMeating", method = { RequestMethod.POST })
 	@ResponseBody
-	@PreAuthorize("hasRole('admin')")
 	public ResultModel<TaskResult> placeOrder(@RequestBody String taskQuery) {
 		// parse json to taskquery
 		LOGGER.info("TaskQuery:{}", taskQuery.toString());

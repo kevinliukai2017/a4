@@ -20,10 +20,11 @@ public class IKAnalyzerUtil {
         CharTermAttribute term = ts.getAttribute(CharTermAttribute.class);
         //遍历分词数据
         while(ts.incrementToken()){
-        	word = term.toString() + ",";
+        	word += term.toString() + ",";
         }
         reader.close();
         
         return word;
 	}
+	
 }

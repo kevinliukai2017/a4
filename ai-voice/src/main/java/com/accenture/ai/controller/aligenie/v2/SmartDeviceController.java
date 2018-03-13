@@ -1,7 +1,6 @@
 package com.accenture.ai.controller.aligenie.v2;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -10,7 +9,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.accenture.ai.constant.AIConstants;
 import com.accenture.ai.logging.LogAgent;
-import com.accenture.ai.service.aligenie.MeatingPOCServiceImpl;
+import com.accenture.ai.service.aligenie.SmartDevicePOCServiceImpl;
 import com.alibaba.da.coin.ide.spi.standard.ResultModel;
 import com.alibaba.da.coin.ide.spi.standard.TaskQuery;
 import com.alibaba.da.coin.ide.spi.standard.TaskResult;
@@ -27,7 +26,7 @@ public class SmartDeviceController {
 	private static final LogAgent LOGGER = LogAgent.getLogAgent(SmartDeviceController.class);
 	
 	@Autowired
-	private MeatingPOCServiceImpl meatingPOCServiceImpl;
+	private SmartDevicePOCServiceImpl smartDevicePOCServiceImpl;
 	
 	@RequestMapping(path = "/answer", method = { RequestMethod.POST })
 	@ResponseBody
@@ -40,7 +39,7 @@ public class SmartDeviceController {
 
 		try {
 			resultModel.setReturnCode(AIConstants.ALIGENIE_RETURN_SUCCESS);
-			resultModel.setReturnValue(meatingPOCServiceImpl.handle(query));
+			resultModel.setReturnValue(smartDevicePOCServiceImpl.handle(query));
 		} catch (Exception e) {
 			resultModel.setReturnCode(AIConstants.ALIGENIE_RETURN_FAIL);
 			resultModel.setReturnErrorSolution(e.getMessage());
