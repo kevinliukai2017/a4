@@ -1,0 +1,48 @@
+2017-12-26 11:23:21 -Starting AIVOICEApplication on CDC317040 with PID 21312 (D:\11.a4\a4\ai-voice\target\classes started by k.c.liu in D:\11.a4\a4\ai-voice)
+2017-12-26 11:23:21 -The following profiles are active: local
+2017-12-26 11:23:21 -Refreshing org.springframework.boot.context.embedded.AnnotationConfigEmbeddedWebApplicationContext@1b6e1eff: startup date [Tue Dec 26 11:23:21 CST 2017]; root of context hierarchy
+2017-12-26 11:23:22 -Tomcat initialized with port(s): 8090 (http)
+2017-12-26 11:23:22 -Starting service [Tomcat]
+2017-12-26 11:23:22 -Starting Servlet Engine: Apache Tomcat/8.5.20
+2017-12-26 11:23:22 -At least one JAR was scanned for TLDs yet contained no TLDs. Enable debug logging for this logger for a complete list of JARs that were scanned but no TLDs were found in them. Skipping unneeded JARs during scanning can improve startup time and JSP compilation time.
+2017-12-26 11:23:22 -Initializing Spring embedded WebApplicationContext
+2017-12-26 11:23:22 -Root WebApplicationContext: initialization completed in 1661 ms
+2017-12-26 11:23:23 -Mapping servlet: 'dispatcherServlet' to [/]
+2017-12-26 11:23:23 -Mapping filter: 'metricsFilter' to: [/*]
+2017-12-26 11:23:23 -Mapping filter: 'characterEncodingFilter' to: [/*]
+2017-12-26 11:23:23 -Mapping filter: 'hiddenHttpMethodFilter' to: [/*]
+2017-12-26 11:23:23 -Mapping filter: 'httpPutFormContentFilter' to: [/*]
+2017-12-26 11:23:23 -Mapping filter: 'requestContextFilter' to: [/*]
+2017-12-26 11:23:23 -Mapping filter: 'webRequestLoggingFilter' to: [/*]
+2017-12-26 11:23:23 -Mapping filter: 'applicationContextIdFilter' to: [/*]
+2017-12-26 11:23:23 -Looking for @ControllerAdvice: org.springframework.boot.context.embedded.AnnotationConfigEmbeddedWebApplicationContext@1b6e1eff: startup date [Tue Dec 26 11:23:21 CST 2017]; root of context hierarchy
+2017-12-26 11:23:23 -Mapped "{[/aligenie/v1/order/placeorder],methods=[POST]}" onto public com.alibaba.da.coin.ide.spi.standard.ResultModel<com.alibaba.da.coin.ide.spi.standard.TaskResult> com.accenture.ai.controller.aligenie.OrderController.getResponse(java.lang.String)
+2017-12-26 11:23:23 -Mapped "{[/_health],methods=[GET]}" onto public java.lang.String com.accenture.ai.controller.HealthController.health()
+2017-12-26 11:23:23 -Mapped "{[/],methods=[GET]}" onto public java.lang.String com.accenture.ai.controller.HealthController.hello()
+2017-12-26 11:23:23 -Mapped "{[/error]}" onto public org.springframework.http.ResponseEntity<java.util.Map<java.lang.String, java.lang.Object>> org.springframework.boot.autoconfigure.web.BasicErrorController.error(javax.servlet.http.HttpServletRequest)
+2017-12-26 11:23:23 -Mapped "{[/error],produces=[text/html]}" onto public org.springframework.web.servlet.ModelAndView org.springframework.boot.autoconfigure.web.BasicErrorController.errorHtml(javax.servlet.http.HttpServletRequest,javax.servlet.http.HttpServletResponse)
+2017-12-26 11:23:23 -Mapped URL path [/webjars/**] onto handler of type [class org.springframework.web.servlet.resource.ResourceHttpRequestHandler]
+2017-12-26 11:23:23 -Mapped URL path [/**] onto handler of type [class org.springframework.web.servlet.resource.ResourceHttpRequestHandler]
+2017-12-26 11:23:23 -Mapped URL path [/**/favicon.ico] onto handler of type [class org.springframework.web.servlet.resource.ResourceHttpRequestHandler]
+2017-12-26 11:23:24 -Mapped "{[/auditevents || /auditevents.json],methods=[GET],produces=[application/vnd.spring-boot.actuator.v1+json || application/json]}" onto public org.springframework.http.ResponseEntity<?> org.springframework.boot.actuate.endpoint.mvc.AuditEventsMvcEndpoint.findByPrincipalAndAfterAndType(java.lang.String,java.util.Date,java.lang.String)
+2017-12-26 11:23:24 -Mapped "{[/beans || /beans.json],methods=[GET],produces=[application/vnd.spring-boot.actuator.v1+json || application/json]}" onto public java.lang.Object org.springframework.boot.actuate.endpoint.mvc.EndpointMvcAdapter.invoke()
+2017-12-26 11:23:24 -Mapped "{[/configprops || /configprops.json],methods=[GET],produces=[application/vnd.spring-boot.actuator.v1+json || application/json]}" onto public java.lang.Object org.springframework.boot.actuate.endpoint.mvc.EndpointMvcAdapter.invoke()
+2017-12-26 11:23:24 -Mapped "{[/loggers/{name:.*}],methods=[GET],produces=[application/vnd.spring-boot.actuator.v1+json || application/json]}" onto public java.lang.Object org.springframework.boot.actuate.endpoint.mvc.LoggersMvcEndpoint.get(java.lang.String)
+2017-12-26 11:23:24 -Mapped "{[/loggers/{name:.*}],methods=[POST],consumes=[application/vnd.spring-boot.actuator.v1+json || application/json],produces=[application/vnd.spring-boot.actuator.v1+json || application/json]}" onto public java.lang.Object org.springframework.boot.actuate.endpoint.mvc.LoggersMvcEndpoint.set(java.lang.String,java.util.Map<java.lang.String, java.lang.String>)
+2017-12-26 11:23:24 -Mapped "{[/loggers || /loggers.json],methods=[GET],produces=[application/vnd.spring-boot.actuator.v1+json || application/json]}" onto public java.lang.Object org.springframework.boot.actuate.endpoint.mvc.EndpointMvcAdapter.invoke()
+2017-12-26 11:23:24 -Mapped "{[/health || /health.json],methods=[GET],produces=[application/vnd.spring-boot.actuator.v1+json || application/json]}" onto public java.lang.Object org.springframework.boot.actuate.endpoint.mvc.HealthMvcEndpoint.invoke(javax.servlet.http.HttpServletRequest,java.security.Principal)
+2017-12-26 11:23:24 -Mapped "{[/info || /info.json],methods=[GET],produces=[application/vnd.spring-boot.actuator.v1+json || application/json]}" onto public java.lang.Object org.springframework.boot.actuate.endpoint.mvc.EndpointMvcAdapter.invoke()
+2017-12-26 11:23:24 -Mapped "{[/env/{name:.*}],methods=[GET],produces=[application/vnd.spring-boot.actuator.v1+json || application/json]}" onto public java.lang.Object org.springframework.boot.actuate.endpoint.mvc.EnvironmentMvcEndpoint.value(java.lang.String)
+2017-12-26 11:23:24 -Mapped "{[/env || /env.json],methods=[GET],produces=[application/vnd.spring-boot.actuator.v1+json || application/json]}" onto public java.lang.Object org.springframework.boot.actuate.endpoint.mvc.EndpointMvcAdapter.invoke()
+2017-12-26 11:23:24 -Mapped "{[/autoconfig || /autoconfig.json],methods=[GET],produces=[application/vnd.spring-boot.actuator.v1+json || application/json]}" onto public java.lang.Object org.springframework.boot.actuate.endpoint.mvc.EndpointMvcAdapter.invoke()
+2017-12-26 11:23:24 -Mapped "{[/trace || /trace.json],methods=[GET],produces=[application/vnd.spring-boot.actuator.v1+json || application/json]}" onto public java.lang.Object org.springframework.boot.actuate.endpoint.mvc.EndpointMvcAdapter.invoke()
+2017-12-26 11:23:24 -Mapped "{[/metrics/{name:.*}],methods=[GET],produces=[application/vnd.spring-boot.actuator.v1+json || application/json]}" onto public java.lang.Object org.springframework.boot.actuate.endpoint.mvc.MetricsMvcEndpoint.value(java.lang.String)
+2017-12-26 11:23:24 -Mapped "{[/metrics || /metrics.json],methods=[GET],produces=[application/vnd.spring-boot.actuator.v1+json || application/json]}" onto public java.lang.Object org.springframework.boot.actuate.endpoint.mvc.EndpointMvcAdapter.invoke()
+2017-12-26 11:23:24 -Mapped "{[/dump || /dump.json],methods=[GET],produces=[application/vnd.spring-boot.actuator.v1+json || application/json]}" onto public java.lang.Object org.springframework.boot.actuate.endpoint.mvc.EndpointMvcAdapter.invoke()
+2017-12-26 11:23:24 -Mapped "{[/heapdump || /heapdump.json],methods=[GET],produces=[application/octet-stream]}" onto public void org.springframework.boot.actuate.endpoint.mvc.HeapdumpMvcEndpoint.invoke(boolean,javax.servlet.http.HttpServletRequest,javax.servlet.http.HttpServletResponse) throws java.io.IOException,javax.servlet.ServletException
+2017-12-26 11:23:24 -Mapped "{[/mappings || /mappings.json],methods=[GET],produces=[application/vnd.spring-boot.actuator.v1+json || application/json]}" onto public java.lang.Object org.springframework.boot.actuate.endpoint.mvc.EndpointMvcAdapter.invoke()
+2017-12-26 11:23:24 -Mapped "{[/logfile || /logfile.json],methods=[GET || HEAD]}" onto public void org.springframework.boot.actuate.endpoint.mvc.LogFileMvcEndpoint.invoke(javax.servlet.http.HttpServletRequest,javax.servlet.http.HttpServletResponse) throws javax.servlet.ServletException,java.io.IOException
+2017-12-26 11:23:24 -Registering beans for JMX exposure on startup
+2017-12-26 11:23:24 -Starting beans in phase 0
+2017-12-26 11:23:24 -Tomcat started on port(s): 8090 (http)
+2017-12-26 11:23:24 -Started AIVOICEApplication in 3.948 seconds (JVM running for 4.929)

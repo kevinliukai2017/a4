@@ -5,7 +5,7 @@
 	<parent>
 		<groupId>org.springframework.boot</groupId>
 		<artifactId>spring-boot-starter-parent</artifactId>
-		<version>1.5.7.RELEASE</version>
+		<version>1.4.4.RELEASE</version>
 	</parent>
 	<groupId>com.accenture.ai.afour</groupId>
 	<artifactId>ai-voice</artifactId>
@@ -23,14 +23,24 @@
 			<artifactId>aligenie-semantic</artifactId>
 			<version>1.0</version>
 		</dependency>
+		<dependency>
+			<groupId>com.ikanalyzer</groupId>
+			<artifactId>ikanalyzer</artifactId>
+			<version>1.0</version>
+		</dependency>
+		<dependency>
+			<groupId>com.ikanalyzer.lucence</groupId>
+			<artifactId>ikanalyzerlucence</artifactId>
+			<version>1.0</version>
+		</dependency>
 		<!-- spring begin -->
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-web</artifactId>
 		</dependency>
 		<dependency>
-		    <groupId>org.springframework.boot</groupId>
-		    <artifactId>spring-boot-starter-websocket</artifactId>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-websocket</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
@@ -45,6 +55,10 @@
 			<artifactId>spring-boot-starter-test</artifactId>
 			<scope>test</scope>
 		</dependency>
+		<dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-redis</artifactId>
+        </dependency>
 		<!-- spring end -->
 		<!-- apache commons begin -->
 		<dependency>
@@ -64,15 +78,15 @@
 		</dependency>
 		<!-- logback end -->
 		<!-- template start -->
-		<dependency> 
-			<groupId>org.thymeleaf</groupId> 
-			<artifactId>thymeleaf</artifactId> 
+		<dependency>
+			<groupId>org.thymeleaf</groupId>
+			<artifactId>thymeleaf</artifactId>
 			<version>${thymeleaf.version}</version>
 		</dependency>
 		<dependency>
-			<groupId>org.thymeleaf</groupId> 
+			<groupId>org.thymeleaf</groupId>
 			<artifactId>thymeleaf-spring4</artifactId>
-			<version>${thymeleaf.version}</version> 
+			<version>${thymeleaf.version}</version>
 		</dependency>
 		<!-- template end -->
 		<!-- others begin -->
@@ -135,6 +149,23 @@
 			<version>1.5.0</version>
 			<scope>compile</scope>
 		</dependency>
+          <dependency>  
+            <groupId>org.postgresql</groupId>  
+            <artifactId>postgresql</artifactId>  
+        </dependency>
+        
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-data-jpa</artifactId>
+		</dependency>
+         <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-security</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.security.oauth</groupId>
+            <artifactId>spring-security-oauth2</artifactId>
+        </dependency>
 		<!-- others end -->
 	</dependencies>
 	<build>
