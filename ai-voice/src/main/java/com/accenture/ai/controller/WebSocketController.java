@@ -3,7 +3,9 @@ package com.accenture.ai.controller;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.Map;
 
+import com.accenture.ai.utils.ArticleResultContex;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.SendTo;
@@ -21,6 +23,9 @@ public class WebSocketController {
 	
 	@Autowired  
 	SocketStatusContex socketStatusContex;
+
+    @Autowired
+    ArticleResultContex articleResultContex;
 
     @Autowired
     private SimpMessagingTemplate messagingTemplate;
@@ -73,6 +78,12 @@ public class WebSocketController {
     @GetMapping("/websocket/storeSalesFrame")
     public String storeSalesFrame() {
         return "storeSalesFrame";
+    }
+
+    @GetMapping("/websocket/articleListFrame")
+    public String articleListFrame(Map<String,Object> model) {
+        model.put("articles",articleResultContex.getArticles());
+        return "articleListFrame";
     }
 
     //该方法是客户端请求服务器时，服务器的处理请求的方法

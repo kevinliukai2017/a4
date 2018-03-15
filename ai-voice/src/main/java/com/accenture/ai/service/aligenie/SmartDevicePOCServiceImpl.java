@@ -7,6 +7,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import com.accenture.ai.service.article.ArticleService;
+import com.accenture.ai.utils.ArticleResultContex;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -29,6 +31,15 @@ public class SmartDevicePOCServiceImpl extends AbstractAligenieService {
 
 	@Autowired
 	SocketStatusContex socketStatusContex;
+
+    @Autowired
+    ArticleResultContex articleResultContex;
+
+	@Autowired
+	ArticleService articleService;
+
+    @Autowired
+    private WebSocketServiceImpl webSocketServiceImpl;
 
 	@Override
 	public TaskResult handle(TaskQuery taskQuery) {
@@ -76,8 +87,10 @@ public class SmartDevicePOCServiceImpl extends AbstractAligenieService {
 			result.setReply("抱歉没有找到你想要的内容");
 			result.setResultType(ResultType.RESULT);
 		} else if (articleDTOs.size() == 1) {
-			// TODO
-			// help to redirect url by socket(content page)
+            articleResultContex.setArticles(articleDTOs);
+            socketStatusContex.setTitleAndUrl("文章列表", articleDTOs.get(0).getUrl());
+            //send contex to customer client
+            webSocketServiceImpl.sendContexToClient();
 			result.setReply(articleDTOs.get(0).getContent());
 			result.setResultType(ResultType.RESULT);
 		} else {
@@ -85,25 +98,27 @@ public class SmartDevicePOCServiceImpl extends AbstractAligenieService {
 			for (ArticleDTO articleDTO : articleDTOs) {
 				titles += articleDTO.getTitle() + ",";
 			}
-			// TODO 
 			// help to redirect url by socket(list page)
+            articleResultContex.setArticles(articleDTOs);
+            socketStatusContex.setTitleAndUrl("文章列表", "/websocket/articleListFrame");
+            //send contex to customer client
+            webSocketServiceImpl.sendContexToClient();
 			result.setReply(titles);
 			result.setResultType(ResultType.ASK_INF);
 		}
 	}
 
 	private List<ArticleDTO> getArticles(List<String> words) {
-		// TODO 
 		// help to get articles
-		List<ArticleDTO> res = new ArrayList<ArticleDTO>();
-		ArticleDTO a = new ArticleDTO();
-		a.setTitle("公司机票怎么定");
-		a.setContent("公司机票怎么定");
-		ArticleDTO b = new ArticleDTO();
-		b.setTitle("公司有没有快消行业实施案例");
-		b.setContent("公司有没有快消行业实施案例");
-		res.add(a);
-		res.add(b);
+		List<ArticleDTO> res = articleService.getArticleByWords(words);
+//		ArticleDTO a = new ArticleDTO();
+//		a.setTitle("公司机票怎么定");
+//		a.setContent("公司机票怎么定");
+//		ArticleDTO b = new ArticleDTO();
+//		b.setTitle("公司有没有快消行业实施案例");
+//		b.setContent("公司有没有快消行业实施案例");
+//		res.add(a);
+//		res.add(b);
 		return res;
 	}
 

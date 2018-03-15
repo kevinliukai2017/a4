@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html>
+<head>
+</head>
+<body>
+<div style="width:1370px; height: 150px; margin-top: 100px">
+    <h1 align="center">
+        查询到的相关解答
+    </h1>
+
+    <div th:each="article : ${articles}">
+        <div>
+            <b>
+                <span th:text="${article.title}">
+            </b>
+        </div>
+    </div>
+</div>
+
+</body>
+</html>

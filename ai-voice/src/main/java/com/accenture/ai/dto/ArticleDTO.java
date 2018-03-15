@@ -3,8 +3,8 @@ package com.accenture.ai.dto;
 public class ArticleDTO {
 
 	private String title;
-	
 	private String content;
+	private String url;
 
 	public String getTitle() {
 		return title;
@@ -21,6 +21,8 @@ public class ArticleDTO {
 	public void setContent(String content) {
 		this.content = content;
 	}
-	
-	
+
+	public String getUrl() { return url; }
+
+	public void setUrl(String url) { this.url = url; }
 }

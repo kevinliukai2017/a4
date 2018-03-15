@@ -1,5 +1,6 @@
 package com.accenture.ai.config;
 
+import com.accenture.ai.utils.ArticleResultContex;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.messaging.simp.config.MessageBrokerRegistry;
@@ -14,6 +15,7 @@ import com.accenture.ai.utils.SocketStatusContex;
 public class WebSocketConfig extends AbstractWebSocketMessageBrokerConfigurer {
 	
 	private SocketStatusContex socketStatusContex;
+	private ArticleResultContex articleResultContex;
 
     @Override
     public void configureMessageBroker(MessageBrokerRegistry config) {
@@ -36,5 +38,14 @@ public class WebSocketConfig extends AbstractWebSocketMessageBrokerConfigurer {
     		
 		return socketStatusContex;
 	}
+
+    @Bean
+    public ArticleResultContex articleResultContex(){
+        if(articleResultContex == null) {
+            articleResultContex = new ArticleResultContex();
+        }
+
+        return articleResultContex;
+    }
 
 }
