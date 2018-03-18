@@ -18,7 +18,7 @@ import java.util.Map;
 @Service
 public class ArticleDaoImpl implements ArticleDao {
 
-    private static final LogAgent LOGGER = LogAgent.getLogAgent(SmartDevicePOCServiceImpl.class);
+    private static final LogAgent LOGGER = LogAgent.getLogAgent(ArticleDaoImpl.class);
 
     @Autowired
     private JdbcTemplate jdbcTemplate;
@@ -39,10 +39,7 @@ public class ArticleDaoImpl implements ArticleDao {
         LOGGER.info("ArticleDaoImpl.getArticleByWords, key words" + words.toString());
 
         Map<String, Object> paramMap = new HashMap<String, Object>();
-
-        final List<String> keyWords = new ArrayList<>();
-        keyWords.add("出差");
-        paramMap.put("keyWords",keyWords);
+        paramMap.put("keyWords",words);
 
         List<ArticleDTO> list = namedParameterJdbcTemplate.query(QUERY_ARTICLE_BY_WORDS,paramMap,new ArticleDTOMapper());
 

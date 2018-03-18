@@ -15,10 +15,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import com.accenture.ai.service.aligenie.WebSocketServiceImpl;
 import com.accenture.ai.utils.SocketStatusContex;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 
 @Controller
@@ -83,6 +80,48 @@ public class TestController {
         }
 
         return result;
+    }
+
+    @RequestMapping(value = "/article",method = RequestMethod.GET)
+    @ResponseBody
+    public String getArticle() {
+
+        String sql = "SELECT post_title as title, post_content as content, guid as url,count(wp_posts.ID) as count, " +
+                "wp_terms.name as tag_name FROM wp_posts JOIN wp_term_relationships ON wp_posts.ID=wp_term_relationships.object_id " +
+                "JOIN wp_terms ON wp_term_relationships.term_taxonomy_id=wp_terms.term_id " +
+                "WHERE wp_posts.post_status = 'publish' AND wp_terms.name IN (:keyWords) " +
+                "GROUP BY wp_posts.ID ORDER BY count desc";
+        Map<String, Object> paramMap = new HashMap<String, Object>();
+
+        final List<String> keyWords = new ArrayList<>();
+        keyWords.add("报销");
+        paramMap.put("keyWords",keyWords);
+
+        List<ArticleDTO> list = namedParameterJdbcTemplate.query(sql,paramMap,new ArticleDTOMapper());
+
+        articleResultContex.setArticles(Arrays.asList(list.get(0)));
+        socketStatusContex.setTitleAndUrl("文章列表", list.get(0).getUrl());
+        //send contex to customer client
+        webSocketServiceImpl.sendContexToClient();
+
+        String result = "";
+
+        for(ArticleDTO entry : list){
+            result += "#################################";
+            result += entry.getTitle();
+            result += "<br>";
+            result += entry.getContent();
+            result += "<br>";
+            result += "<br>";
+        }
+
+        return result;
+    }
+
+    @RequestMapping(value = "/success",method = RequestMethod.GET)
+    @ResponseBody
+    public String test() {
+        return "success";
     }
 
 }

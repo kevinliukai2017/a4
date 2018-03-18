@@ -59,7 +59,7 @@ public class SmartDevicePOCServiceImpl extends AbstractAligenieService {
 	private void buildResult(TaskQuery taskQuery, TaskResult result, String any, String sequence) {
 
 		if (StringUtils.isEmpty(any) && StringUtils.isEmpty(sequence)) {
-			result.setReply("请告诉我你要干嘛，比如 天猫精灵 请问智能问答 如何填写时间成本");
+			result.setReply("请告诉我你要干嘛，比如 天猫精灵 智能问答 请问如何填写时间成本");
 			result.setResultType(ResultType.RESULT);
 		} else if (isSecond(sequence)) {
 			int index = NumberUtil.chineseNumber2Int(any);
@@ -87,8 +87,9 @@ public class SmartDevicePOCServiceImpl extends AbstractAligenieService {
 			result.setReply("抱歉没有找到你想要的内容");
 			result.setResultType(ResultType.RESULT);
 		} else if (articleDTOs.size() == 1) {
+            LOGGER.info("查询到的文章，title：" + articleDTOs.get(0).getTitle() + "  url:"+articleDTOs.get(0).getUrl());
             articleResultContex.setArticles(articleDTOs);
-            socketStatusContex.setTitleAndUrl("文章列表", articleDTOs.get(0).getUrl());
+            socketStatusContex.setTitleAndUrl("文章详情", articleDTOs.get(0).getUrl());
             //send contex to customer client
             webSocketServiceImpl.sendContexToClient();
 			result.setReply(articleDTOs.get(0).getContent());
@@ -98,6 +99,7 @@ public class SmartDevicePOCServiceImpl extends AbstractAligenieService {
 			for (ArticleDTO articleDTO : articleDTOs) {
 				titles += articleDTO.getTitle() + ",";
 			}
+			titles += "请问想选择哪一条";
 			// help to redirect url by socket(list page)
             articleResultContex.setArticles(articleDTOs);
             socketStatusContex.setTitleAndUrl("文章列表", "/websocket/articleListFrame");
@@ -132,10 +134,39 @@ public class SmartDevicePOCServiceImpl extends AbstractAligenieService {
 			}
 			// TODO 
 			// help to redirect url by socket(content page)
-			return answers.get(index - 1);
+            String title = answers.get(index - 1);
+            LOGGER.info("get detail answer by title:" + title);
+            ArticleDTO articleDetail = getArticleDetailFromContex(title);
+            LOGGER.info("the detail answer is:" + articleDetail == null ? "" : articleDetail.getContent());
+
+			if (articleDetail != null){
+                articleResultContex.setArticles(Arrays.asList(articleDetail));
+                socketStatusContex.setTitleAndUrl("文章列表", articleDetail.getUrl());
+                //send contex to customer client
+                webSocketServiceImpl.sendContexToClient();
+
+			    return articleDetail.getContent();
+            }
+            else{
+                LOGGER.info("can not get detail answer by title:" + title);
+            }
+
 		}
 		return "抱歉，未找到上下文，请重新查询";
 	}
+
+	private ArticleDTO getArticleDetailFromContex(final String title){
+        ArticleDTO result = null;
+        if (StringUtils.isNotEmpty(title) && articleResultContex != null && !CollectionUtils.isEmpty(articleResultContex.getArticles())){
+            for(ArticleDTO articleDTO : articleResultContex.getArticles()){
+                if (title.equals(articleDTO.getTitle())){
+                    result = articleDTO;
+                }
+            }
+        }
+
+        return result;
+    }
 
 	private boolean isSecond(String sequence) {
 		return StringUtils.isNotEmpty(sequence);

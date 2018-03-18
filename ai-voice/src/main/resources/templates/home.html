@@ -12,6 +12,14 @@
 	var socket = null;
 
 	var websocket = angular.module('websocket', []);
+    websocket.config(function($sceDelegateProvider) {
+        $sceDelegateProvider.resourceUrlWhitelist([
+            // Allow same origin resource loads.
+            'self',
+            // Allow loading from our assets domain.  Notice the difference between * and **.
+            'http://106.14.124.254:8080/**']);
+    });
+
 	websocket.controller('MainController', function($rootScope, $scope, $http) {
 
 		$scope.data = {
@@ -96,11 +104,6 @@
     window.onresize = function(){ 
     		changeFrameHeight();
     	}
-    
-    	$(function(){
-    		changeFrameHeight();
-    	});
-	
 
 	/*]]>*/
 </script>
