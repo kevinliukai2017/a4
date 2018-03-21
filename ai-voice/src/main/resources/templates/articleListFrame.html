@@ -1,21 +1,62 @@
 <!DOCTYPE html>
 <html>
 <head>
+    <link href="../css/animate.css" rel="stylesheet">
+    <link href="../css/layout.min.css" rel="stylesheet" type="text/css"/>
+    <link href="http://fonts.googleapis.com/css?family=Hind:300,400,500,600,700" rel="stylesheet" type="text/css">
+    <link href="../css/simple-line-icons.css" rel="stylesheet" type="text/css"/>
+    <link href="../css/bootstrap.min.css" rel="stylesheet" type="text/css"/>
 </head>
 <body>
-<div style="margin-bottom: 0.5rem;height: 1500px; font-family: inherit;font-weight: 300; line-height: 0.1; color: white;">
-    <h1 align="center">
-        查询到的相关解答
+<center>
+    <img src="../images/01.jpg"/>
+    <h1 align="center" class="margin-b-50">
+        欢迎光临智能问答系统
     </h1>
-
-    <div th:each="article : ${articles}">
-        <ul>
-            <h2>
-                <span th:text="${article.title}">
-            </h2>
-        </ul>
+</center>
+<h2 class="text-left sm-text-left margin-b-50"><font size="5">以下是根据您提问的关键词搜索到的相关文章:</font></h2>
+<div class="text-left sm-text-left" div th:each="article : ${articles}">
+    <p class="text-center margin-b-10" th:text="${article.title}" style="font-size: 30px;"></p>
+</div>
+<div class="text-left sm-text-left">
+    <h2 class="margin-b-0"><font size="5">请问您想要查看哪篇文章?</font></h2>
+</div>
+<!-- Contact -->
+<div id="contact">
+    <div class="bg-color-sky-light">
+        <div class="container content-lg">
+            <div class="row">
+                <div class="col-sm-3 sm-margin-b-30">
+                    <div class="text-right sm-text-left">
+                        <h2 class="margin-b-0">Contacts</h2>
+                        <p>Hire me.</p>
+                    </div>
+                </div>
+                <div class="col-sm-8 col-sm-offset-1">
+                    <div class="row">
+                        <div class="col-md-3 col-xs-6 md-margin-b-30">
+                            <h5>Location</h5>
+                            <a href="#">Shanghai, China</a>
+                        </div>
+                        <div class="col-md-3 col-xs-6 md-margin-b-30">
+                            <h5>Phone</h5>
+                            <a href="#">+81 123 456 789</a>
+                        </div>
+                        <div class="col-md-3 col-xs-6">
+                            <h5>Email</h5>
+                            <a href="mailto:#">aaa@accenture.com</a>
+                        </div>
+                        <div class="col-md-3 col-xs-6">
+                            <h5>Web</h5>
+                            <a href="#">accenture.com</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!--// end row -->
+        </div>
     </div>
 </div>
-
+<!-- End Contact -->
 </body>
 </html>
