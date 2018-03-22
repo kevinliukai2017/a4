@@ -45,7 +45,7 @@ public class SmartDevicePOCServiceImpl extends AbstractAligenieService {
 	public TaskResult handle(TaskQuery taskQuery) {
 		LOGGER.info("SmartDevicePOCServiceImpl start -----------");
 		Map<String, String> paramMap = taskQuery.getSlotEntities().stream().collect(Collectors
-				.toMap(slotItem -> slotItem.getIntentParameterName(), slotItem -> slotItem.getStandardValue()));
+                .toMap(slotItem -> slotItem.getIntentParameterName(), slotItem -> slotItem.getLiveTime() > 0 ? "" : slotItem.getStandardValue()));
 		LOGGER.info("paramMap ：" + paramMap.toString());
 		// test content
 		TaskResult result = new TaskResult();
@@ -62,9 +62,9 @@ public class SmartDevicePOCServiceImpl extends AbstractAligenieService {
 			result.setReply("请告诉我你要干嘛，比如 天猫精灵 智能问答 请问如何填写时间成本");
 			result.setResultType(ResultType.RESULT);
 		} else if (isSecond(sequence)) {
-			int index = NumberUtil.chineseNumber2Int(any);
+			int index = NumberUtil.chineseNumber2Int(sequence);
 			LOGGER.info("index is:" + index);
-			result.setReply(getDetailAnswer(taskQuery, index));
+			result.setReply(getDetailAnswer(taskQuery, any, index));
 			result.setResultType(ResultType.RESULT);
 		} else {
 			try {
@@ -72,7 +72,7 @@ public class SmartDevicePOCServiceImpl extends AbstractAligenieService {
 				LOGGER.info("分词结果:" + splitWords);
 				List<String> words = Arrays.asList(splitWords.split(","));
 				List<ArticleDTO> articleDTOs = getArticles(words);
-				buildReply(result, articleDTOs);
+				buildReply(result,any, articleDTOs);
 			} catch (IOException e) {
 				result.setReply("分词发生异常,请联系管理员");
 				result.setResultType(ResultType.RESULT);
@@ -81,7 +81,7 @@ public class SmartDevicePOCServiceImpl extends AbstractAligenieService {
 		}
 	}
 
-	private void buildReply(TaskResult result, List<ArticleDTO> articleDTOs) {
+	private void buildReply(TaskResult result,String any, List<ArticleDTO> articleDTOs) {
 		if (CollectionUtils.isEmpty(articleDTOs)) {
 			LOGGER.info("分词结果未在数据库查询到相关tag");
 			result.setReply("抱歉没有找到你想要的内容");
@@ -89,7 +89,7 @@ public class SmartDevicePOCServiceImpl extends AbstractAligenieService {
 		} else if (articleDTOs.size() == 1) {
             LOGGER.info("查询到的文章，title：" + articleDTOs.get(0).getTitle() + "  url:"+articleDTOs.get(0).getUrl());
             articleResultContex.setArticles(articleDTOs);
-            socketStatusContex.setTitleAndUrl("文章详情", articleDTOs.get(0).getUrl());
+            socketStatusContex.setTitleAndUrl(any, articleDTOs.get(0).getUrl());
             //send contex to customer client
             webSocketServiceImpl.sendContexToClient();
 			result.setReply(articleDTOs.get(0).getContent());
@@ -102,7 +102,7 @@ public class SmartDevicePOCServiceImpl extends AbstractAligenieService {
 			titles += "请问想选择哪一条";
 			// help to redirect url by socket(list page)
             articleResultContex.setArticles(articleDTOs);
-            socketStatusContex.setTitleAndUrl("文章列表", "/websocket/articleListFrame");
+            socketStatusContex.setTitleAndUrl(any, "/websocket/articleListFrame");
             //send contex to customer client
             webSocketServiceImpl.sendContexToClient();
 			result.setReply(titles);
@@ -124,7 +124,7 @@ public class SmartDevicePOCServiceImpl extends AbstractAligenieService {
 		return res;
 	}
 
-	private String getDetailAnswer(TaskQuery taskQuery, int index) {
+	private String getDetailAnswer(TaskQuery taskQuery, String any, int index) {
 
 		ConversationRecord conversationRecord = taskQuery.getConversationRecords().stream().findFirst().orElse(null);
 		if (null != conversationRecord) {
@@ -141,7 +141,7 @@ public class SmartDevicePOCServiceImpl extends AbstractAligenieService {
 
 			if (articleDetail != null){
                 articleResultContex.setArticles(Arrays.asList(articleDetail));
-                socketStatusContex.setTitleAndUrl("文章列表", articleDetail.getUrl());
+                socketStatusContex.setTitleAndUrl(any, articleDetail.getUrl());
                 //send contex to customer client
                 webSocketServiceImpl.sendContexToClient();
 

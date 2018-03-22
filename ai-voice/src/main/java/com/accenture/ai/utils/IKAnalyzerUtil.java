@@ -13,7 +13,7 @@ public class IKAnalyzerUtil {
 	public static String wordSplit(String text) throws IOException{
 		String word = "";
 		 //创建分词对象
-        Analyzer anal = new IKAnalyzer(true);
+        Analyzer anal = new IKAnalyzer(false);
         StringReader reader = new StringReader(text);
         //分词
         TokenStream ts = anal.tokenStream("", reader);
@@ -26,5 +26,11 @@ public class IKAnalyzerUtil {
         
         return word;
 	}
+
+//	public static void main(String[] args) throws IOException {
+//
+//        System.out.println(IKAnalyzerUtil.wordSplit("我们的男女比例是多少"));
+//
+//    }
 	
 }
