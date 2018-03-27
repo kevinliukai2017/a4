@@ -3,8 +3,10 @@ package com.accenture.ai.service.aligenie;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collector;
 import java.util.stream.Collectors;
 
 import com.accenture.ai.service.article.ArticleService;
@@ -51,21 +53,26 @@ public class SmartDevicePOCServiceImpl extends AbstractAligenieService {
 		TaskResult result = new TaskResult();
 		String any = paramMap.get("any");
 		String sequence = paramMap.get("sequence");
-		buildResult(taskQuery, result, any,sequence);
+		String back = paramMap.get("back");
+		buildResult(taskQuery, result, any,sequence,back);
 		LOGGER.info("SmartDevicePOCServiceImpl end --------------");
 		return result;
 	}
 
-	private void buildResult(TaskQuery taskQuery, TaskResult result, String any, String sequence) {
+	private void buildResult(TaskQuery taskQuery, TaskResult result, String any, String sequence, String back) {
 
-		if (StringUtils.isEmpty(any) && StringUtils.isEmpty(sequence)) {
+		if (StringUtils.isEmpty(any) && StringUtils.isEmpty(sequence) && StringUtils.isEmpty(back)) {
 			result.setReply("请告诉我你要干嘛，比如 天猫精灵 智能问答 请问如何填写时间成本");
-			result.setResultType(ResultType.RESULT);
+			result.setResultType(ResultType.ASK_INF);
 		} else if (isSecond(sequence)) {
 			int index = NumberUtil.chineseNumber2Int(sequence);
 			LOGGER.info("index is:" + index);
 			result.setReply(getDetailAnswer(taskQuery, any, index));
-			result.setResultType(ResultType.RESULT);
+			result.setResultType(ResultType.ASK_INF);
+		} else if (isBack(back)) {
+			String reply = buildBackReply(taskQuery);
+			result.setReply(reply);
+			result.setResultType(ResultType.ASK_INF);
 		} else {
 			try {
 				String splitWords = IKAnalyzerUtil.wordSplit(any);
@@ -81,11 +88,49 @@ public class SmartDevicePOCServiceImpl extends AbstractAligenieService {
 		}
 	}
 
+	/**
+	 * @param taskQuery
+	 * @return
+	 */
+	private String buildBackReply(TaskQuery taskQuery) {
+		String reply = "沒有上一条啦";
+		if(taskQuery.getConversationRecords().size() > 1){
+			LOGGER.info("用户上一次输入为:" + taskQuery.getConversationRecords().get(0).getUserInputUtterance());
+			if (!taskQuery.getConversationRecords().get(0).getUserInputUtterance().equals("返回上一条")) {
+				reply = taskQuery.getConversationRecords().get(1).getReplyUtterance() + "_";
+			} else {
+				String record = taskQuery.getConversationRecords().get(0).getReplyUtterance().replaceAll("_", "");
+				LOGGER.info("上一条天猫精灵输出为:" + record );
+				int index = -1;
+				for (int i = 0; i < taskQuery.getConversationRecords().size(); i++) {
+					if (record.equals(taskQuery.getConversationRecords().get(i).getReplyUtterance())) {
+						index = i;
+						break;
+					}
+				}
+				LOGGER.info("后退索引为：" + (index + 1) + "size:" + taskQuery.getConversationRecords().size());
+				if(index != -1 && index + 1 <  taskQuery.getConversationRecords().size()){
+					reply = taskQuery.getConversationRecords().get(index + 1).getReplyUtterance() + "_";
+				}else{
+					LOGGER.info("历史记录里未找到：" + record);
+				}
+				
+			}
+		}else{
+			LOGGER.info("不能返回上一条因为记录大小为:" + taskQuery.getConversationRecords().size());
+		}
+		return reply;
+	}
+
+	private boolean isBack(String back) {
+		return StringUtils.isNotBlank(back);
+	}
+
 	private void buildReply(TaskResult result,String any, List<ArticleDTO> articleDTOs) {
 		if (CollectionUtils.isEmpty(articleDTOs)) {
 			LOGGER.info("分词结果未在数据库查询到相关tag");
 			result.setReply("抱歉没有找到你想要的内容");
-			result.setResultType(ResultType.RESULT);
+			result.setResultType(ResultType.ASK_INF);
 		} else if (articleDTOs.size() == 1) {
             LOGGER.info("查询到的文章，title：" + articleDTOs.get(0).getTitle() + "  url:"+articleDTOs.get(0).getUrl());
             articleResultContex.setArticles(articleDTOs);
@@ -93,7 +138,7 @@ public class SmartDevicePOCServiceImpl extends AbstractAligenieService {
             //send contex to customer client
             webSocketServiceImpl.sendContexToClient();
 			result.setReply(articleDTOs.get(0).getContent());
-			result.setResultType(ResultType.RESULT);
+			result.setResultType(ResultType.ASK_INF);
 		} else {
 			String titles = "";
 			for (ArticleDTO articleDTO : articleDTOs) {
@@ -171,4 +216,5 @@ public class SmartDevicePOCServiceImpl extends AbstractAligenieService {
 	private boolean isSecond(String sequence) {
 		return StringUtils.isNotEmpty(sequence);
 	}
+	
 }
