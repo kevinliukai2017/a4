@@ -7,19 +7,31 @@ import com.alibaba.da.coin.ide.spi.standard.TaskQuery;
 
 public class AligenieSessionUtil {
 
-	public static Map<String, TaskQuery> aligenieSession = new HashMap<>();
-	
-	public static void addTaskQuery(TaskQuery taskQuery){
-		if(null == aligenieSession.get(taskQuery.getSessionId())){
+	private AligenieSessionUtil() {
+	}
+
+	private static class AligenieSessionFactory {
+		private static Map<String, TaskQuery> instance = new HashMap<>();
+	}
+
+	public static Map<String, TaskQuery> getInstance() {
+		return AligenieSessionFactory.instance;
+	}
+
+	public static void addTaskQuery(TaskQuery taskQuery) {
+		Map<String, TaskQuery> aligenieSession = AligenieSessionUtil.getInstance();
+		if (null == aligenieSession.get(taskQuery.getSessionId())) {
 			aligenieSession.put(taskQuery.getSessionId(), taskQuery);
 		}
 	}
-	
-	public static void updateTaskQuery(TaskQuery taskQuery){
-			aligenieSession.put(taskQuery.getSessionId(), taskQuery);
+
+	public static void updateTaskQuery(TaskQuery taskQuery) {
+		Map<String, TaskQuery> aligenieSession = AligenieSessionUtil.getInstance();
+		aligenieSession.put(taskQuery.getSessionId(), taskQuery);
 	}
-	
-	public static TaskQuery getTaskQuery(TaskQuery taskQuery){
+
+	public static TaskQuery getTaskQuery(TaskQuery taskQuery) {
+		Map<String, TaskQuery> aligenieSession = AligenieSessionUtil.getInstance();
 		return aligenieSession.get(taskQuery.getSessionId());
-}
+	}
 }

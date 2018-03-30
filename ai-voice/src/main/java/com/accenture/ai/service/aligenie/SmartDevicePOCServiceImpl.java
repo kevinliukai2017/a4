@@ -3,6 +3,7 @@ package com.accenture.ai.service.aligenie;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -24,6 +25,7 @@ import com.accenture.ai.utils.NumberUtil;
 import com.accenture.ai.utils.SocketStatusContex;
 import com.alibaba.da.coin.ide.spi.meta.ConversationRecord;
 import com.alibaba.da.coin.ide.spi.meta.ResultType;
+import com.alibaba.da.coin.ide.spi.meta.SlotEntity;
 import com.alibaba.da.coin.ide.spi.standard.TaskQuery;
 import com.alibaba.da.coin.ide.spi.standard.TaskResult;
 import com.google.gson.Gson;
@@ -118,30 +120,30 @@ public class SmartDevicePOCServiceImpl extends AbstractAligenieService {
 	 */
 	private String buildBackReply(TaskQuery taskQuery) {
 		String reply = "沒有上一条啦";
-		if(taskQuery.getConversationRecords().size() > 1){
-			LOGGER.info("用户上一次输入为:" + taskQuery.getConversationRecords().get(0).getUserInputUtterance());
-			if (!taskQuery.getConversationRecords().get(0).getUserInputUtterance().equals("返回上一条")) {
-				reply = taskQuery.getConversationRecords().get(1).getReplyUtterance() + "_";
+		if(getDialogFromSession(taskQuery).size() > 1){
+			LOGGER.info("用户上一次输入为:" + getDialogFromSession(taskQuery).get(0).getUserInputUtterance());
+			if (!getDialogFromSession(taskQuery).get(0).getUserInputUtterance().equals("返回上一条")) {
+				reply = getDialogFromSession(taskQuery).get(1).getReplyUtterance() + "_";
 			} else {
-				String record = taskQuery.getConversationRecords().get(0).getReplyUtterance().replaceAll("_", "");
+				String record = getDialogFromSession(taskQuery).get(0).getReplyUtterance().replaceAll("_", "");
 				LOGGER.info("上一条天猫精灵输出为:" + record );
 				int index = -1;
-				for (int i = 0; i < taskQuery.getConversationRecords().size(); i++) {
-					if (record.equals(taskQuery.getConversationRecords().get(i).getReplyUtterance())) {
+				for (int i = 0; i < getDialogFromSession(taskQuery).size(); i++) {
+					if (record.equals(getDialogFromSession(taskQuery).get(i).getReplyUtterance())) {
 						index = i;
 						break;
 					}
 				}
-				LOGGER.info("后退索引为：" + (index + 1) + "size:" + taskQuery.getConversationRecords().size());
-				if(index != -1 && index + 1 <  taskQuery.getConversationRecords().size()){
-					reply = taskQuery.getConversationRecords().get(index + 1).getReplyUtterance() + "_";
+				LOGGER.info("后退索引为：" + (index + 1) + "size:" + getDialogFromSession(taskQuery).size());
+				if(index != -1 && index + 1 <  getDialogFromSession(taskQuery).size()){
+					reply =getDialogFromSession(taskQuery).get(index + 1).getReplyUtterance() + "_";
 				}else{
 					LOGGER.info("历史记录里未找到：" + record);
 				}
 				
 			}
 		}else{
-			LOGGER.info("不能返回上一条因为记录大小为:" + taskQuery.getConversationRecords().size());
+			LOGGER.info("不能返回上一条因为记录大小为:" + getDialogFromSession(taskQuery).size());
 		}
 		return reply;
 	}
@@ -195,7 +197,7 @@ public class SmartDevicePOCServiceImpl extends AbstractAligenieService {
 
 	private String getDetailAnswer(TaskQuery taskQuery, String any, int index) {
 
-		ConversationRecord conversationRecord = taskQuery.getConversationRecords().stream().findFirst().orElse(null);
+		ConversationRecord conversationRecord = getDialogFromSession(taskQuery).stream().findFirst().orElse(null);
 		if (null != conversationRecord) {
 			List<String> answers = Arrays.asList(conversationRecord.getReplyUtterance().split(","));
 			if (index > answers.size()) {
@@ -222,6 +224,10 @@ public class SmartDevicePOCServiceImpl extends AbstractAligenieService {
 
 		}
 		return "抱歉，未找到上下文，请重新查询";
+	}
+
+	private List<ConversationRecord> getDialogFromSession(TaskQuery taskQuery) {
+		return AligenieSessionUtil.getTaskQuery(taskQuery).getConversationRecords();
 	}
 
 	private ArticleDTO getArticleDetailFromContex(final String title){
