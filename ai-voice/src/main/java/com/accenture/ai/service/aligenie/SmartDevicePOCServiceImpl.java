@@ -10,6 +10,7 @@ import java.util.stream.Collector;
 import java.util.stream.Collectors;
 
 import com.accenture.ai.service.article.ArticleService;
+import com.accenture.ai.utils.AligenieSessionUtil;
 import com.accenture.ai.utils.ArticleResultContex;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,6 +26,7 @@ import com.alibaba.da.coin.ide.spi.meta.ConversationRecord;
 import com.alibaba.da.coin.ide.spi.meta.ResultType;
 import com.alibaba.da.coin.ide.spi.standard.TaskQuery;
 import com.alibaba.da.coin.ide.spi.standard.TaskResult;
+import com.google.gson.Gson;
 
 @Service
 public class SmartDevicePOCServiceImpl extends AbstractAligenieService {
@@ -42,6 +44,8 @@ public class SmartDevicePOCServiceImpl extends AbstractAligenieService {
 
     @Autowired
     private WebSocketServiceImpl webSocketServiceImpl;
+    
+    private static final Gson GSON = new Gson();
 
 	@Override
 	public TaskResult handle(TaskQuery taskQuery) {
@@ -55,8 +59,28 @@ public class SmartDevicePOCServiceImpl extends AbstractAligenieService {
 		String sequence = paramMap.get("sequence");
 		String back = paramMap.get("back");
 		buildResult(taskQuery, result, any,sequence,back);
+		buildAligenieSession(taskQuery,result);
 		LOGGER.info("SmartDevicePOCServiceImpl end --------------");
 		return result;
+	}
+
+	private void buildAligenieSession(TaskQuery taskQuery, TaskResult result) {
+		String userInput = taskQuery.getUtterance();
+		String deviceOutput = result.getReply();
+		ConversationRecord record = new ConversationRecord();
+		record.setUserInputUtterance(userInput);
+		record.setReplyUtterance(deviceOutput);
+		record.setTimestamp(System.currentTimeMillis());
+		TaskQuery dailog =  AligenieSessionUtil.getTaskQuery(taskQuery);
+		List<ConversationRecord> conversationRecords = dailog.getConversationRecords();
+		if(CollectionUtils.isEmpty(conversationRecords)){
+			conversationRecords = new ArrayList<ConversationRecord>();
+		}
+		conversationRecords.add(record);
+		conversationRecords.sort((b1, b2) -> b1.getTimestamp() > b2.getTimestamp() ?  -1 : 1);
+		taskQuery.setConversationRecords(conversationRecords);
+		AligenieSessionUtil.updateTaskQuery(taskQuery);
+		LOGGER.info("session info:" + GSON.toJson(taskQuery));
 	}
 
 	private void buildResult(TaskQuery taskQuery, TaskResult result, String any, String sequence, String back) {

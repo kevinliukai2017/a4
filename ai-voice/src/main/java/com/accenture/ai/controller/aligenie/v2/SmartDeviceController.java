@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.accenture.ai.constant.AIConstants;
 import com.accenture.ai.logging.LogAgent;
 import com.accenture.ai.service.aligenie.SmartDevicePOCServiceImpl;
+import com.accenture.ai.utils.AligenieSessionUtil;
 import com.alibaba.da.coin.ide.spi.standard.ResultModel;
 import com.alibaba.da.coin.ide.spi.standard.TaskQuery;
 import com.alibaba.da.coin.ide.spi.standard.TaskResult;
@@ -35,6 +36,7 @@ public class SmartDeviceController {
 		LOGGER.info("TaskQuery:{}", taskQuery.toString());
 		TaskQuery query = MetaFormat.parseToQuery(taskQuery);
 		// prepare result
+		AligenieSessionUtil.addTaskQuery(query);
 		ResultModel<TaskResult> resultModel = new ResultModel<TaskResult>();
 
 		try {
