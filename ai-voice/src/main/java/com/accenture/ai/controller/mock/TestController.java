@@ -3,6 +3,7 @@ package com.accenture.ai.controller.mock;
 import com.accenture.ai.dto.ArticleDTO;
 import com.accenture.ai.utils.ArticleDTOMapper;
 import com.accenture.ai.utils.ArticleResultContex;
+import com.google.gson.Gson;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.stereotype.Controller;
@@ -33,6 +34,8 @@ public class TestController {
 	
 	@Autowired
 	private WebSocketServiceImpl webSocketServiceImpl;
+
+    private static final Gson GSON = new Gson();
 	
 	@RequestMapping(value = "/changeStatus",method = RequestMethod.POST)
     @ResponseBody
@@ -122,6 +125,18 @@ public class TestController {
     @ResponseBody
     public String test() {
         return "success";
+    }
+
+    @RequestMapping(value = "/articlesRecordsContext",method = RequestMethod.GET)
+    @ResponseBody
+    public String getArticlesRecordsContext(){
+	    return GSON.toJson(articleResultContex.getRecordArticles());
+    }
+
+    @RequestMapping(value = "/articlesContext",method = RequestMethod.GET)
+    @ResponseBody
+    public String getArticlesContext(){
+        return GSON.toJson(articleResultContex.getArticles());
     }
 
 }

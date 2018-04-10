@@ -9,10 +9,12 @@ public interface ArticleDao {
     /**
      * get the article by words, will search the article from the database.
      *
+     * @param questions
+     *  the questions
      * @param words
      *  the key words
      * @return List<ArticleDTO>
      *  the articles
      */
-    List<ArticleDTO> getArticleByWords(List<String> words);
+    List<ArticleDTO> getArticleByWords(String questions, List<String> words);
 }

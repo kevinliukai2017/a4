@@ -13,7 +13,7 @@ public class IKAnalyzerUtil {
 	public static String wordSplit(String text) throws IOException{
 		String word = "";
 		 //创建分词对象
-        Analyzer anal = new IKAnalyzer(false);
+        Analyzer anal = new IKAnalyzer(true);
         StringReader reader = new StringReader(text);
         //分词
         TokenStream ts = anal.tokenStream("", reader);

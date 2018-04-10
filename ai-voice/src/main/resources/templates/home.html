@@ -60,10 +60,16 @@
 		
 		$scope.handleServerStatus = function(msg) {
 			var formatedMsg = JSON.parse(msg.body);
-			if (formatedMsg.url != $scope.data.server.url || formatedMsg.title != $scope.data.server.title) {
-				$scope.data.server.url = formatedMsg.url;
-				$scope.data.server.title = formatedMsg.title;
-				$scope.$apply();
+			if (formatedMsg.url != '') {
+
+			    if(formatedMsg.url == $scope.data.server.url){
+                    document.getElementById('FrameID').contentWindow.location.reload(true);
+				}
+				else{
+                    $scope.data.server.url = formatedMsg.url;
+                    $scope.data.server.title = formatedMsg.title;
+                    $scope.$apply();
+				}
                 changeFrameHeight();
 			}
 		}
@@ -103,14 +109,14 @@
         ifm.height=document.documentElement.clientHeight;
     }
 	
-    window.onresize = function(){ 
-    		changeFrameHeight();
-    	}
+    window.onresize = function(){
+		changeFrameHeight();
+	}
 
-	/*]]>*/
+    /*]]>*/
 </script>
 </head>
-<body ng-app="websocket" ng-controller="MainController" style="background-color: #252830;">
+<body ng-app="websocket" ng-controller="MainController">
 
 	<div class= "title" ng-show="data.showTitle">
 		<label>门户信息平台:</label>

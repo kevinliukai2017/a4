@@ -15,8 +15,8 @@
     </h1>
 </center>
 <h2 class="text-left sm-text-left margin-b-50"><font size="5">以下是根据您提问的关键词搜索到的相关文章:</font></h2>
-<div class="text-left sm-text-left" div th:each="article : ${articles}">
-    <p class="text-center margin-b-10" th:text="${article.title}" style="font-size: 30px;"></p>
+<div class="text-left sm-text-left" div th:each="article,articleStat: ${articles}">
+    <p class="text-center margin-b-10" th:text="${articleStat.index + 1}+'. '+${article.title}" style="font-size: 30px;"></p>
 </div>
 <div class="text-left sm-text-left">
     <h2 class="margin-b-0"><font size="5">请问您想要查看哪篇文章?</font></h2>

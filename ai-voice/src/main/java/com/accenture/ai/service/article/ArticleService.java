@@ -14,5 +14,38 @@ public interface ArticleService {
      * @return List<ArticleDTO>
      *  the articles
      */
-    List<ArticleDTO> getArticleByWords(List<String> words);
+    List<ArticleDTO> getArticleByWords(String questions, List<String> words);
+
+    /**
+     * record the article to context
+     *
+     * @param questions
+     * @param articles
+     */
+    void recordAndSendArticles(String questions, List<ArticleDTO> articles);
+
+    /**
+     * get the detail answer from the context by title
+     *
+     * @param title
+     * @return the detail answer
+     */
+    ArticleDTO getArticleDetailFromContext(String title);
+
+    /**
+     * build the reply title
+     *
+     * @param articles
+     * @return the titles
+     */
+    String buildReplyResult(List<ArticleDTO> articles);
+
+    /**
+     * get the articles from record context and send the articles to the socket server, this method will be use in the
+     * return back logic.
+     *
+     * @param content
+     * @return
+     */
+    List<ArticleDTO> getAndSendArticlesFromContext(String content);
 }
