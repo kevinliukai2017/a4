@@ -9,6 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -26,25 +27,51 @@ public class ArticleDaoImpl implements ArticleDao {
     @Autowired
     private NamedParameterJdbcTemplate namedParameterJdbcTemplate;
 
+    private final static String QUERY_ARTICLE_BY_QUESTIONS = "SELECT post_title as title, post_content as content, guid as url " +
+            "FROM wp_posts WHERE wp_posts.post_status = 'publish' AND wp_posts.post_title = :questions";
+
     private final static String QUERY_ARTICLE_BY_WORDS = "SELECT post_title as title, post_content as content, guid as url,count(wp_posts.ID) as count, " +
             "wp_terms.name as tag_name FROM wp_posts JOIN wp_term_relationships ON wp_posts.ID=wp_term_relationships.object_id " +
             "JOIN wp_terms ON wp_term_relationships.term_taxonomy_id=wp_terms.term_id " +
             "WHERE wp_posts.post_status = 'publish' AND wp_terms.name IN (:keyWords) " +
             "GROUP BY wp_posts.ID ORDER BY count desc";
 
+    private final static String QUERY_ARTICLE_BY_WORDS_PRE_FIX = "SELECT post_title as title, post_content as content, guid as url,count(wp_posts.ID) as count, " +
+            "wp_terms.name as tag_name FROM wp_posts JOIN wp_term_relationships ON wp_posts.ID=wp_term_relationships.object_id " +
+            "JOIN wp_terms ON wp_term_relationships.term_taxonomy_id=wp_terms.term_id " +
+            "WHERE wp_posts.post_status = 'publish'";
+
+    private final static String QUERY_ARTICLE_BY_WORDS_END_FIX = "GROUP BY wp_posts.ID ORDER BY count desc";
+
     @Override
-    public List<ArticleDTO> getArticleByWords(List<String> words) {
+    public List<ArticleDTO> getArticleByWords(String questions, List<String> words) {
 
 
-        LOGGER.info("ArticleDaoImpl.getArticleByWords, key words" + words.toString());
-
+        LOGGER.info("ArticleDaoImpl.getArticleByWords questions:"+questions +", key words" + words.toString());
         Map<String, Object> paramMap = new HashMap<String, Object>();
         paramMap.put("keyWords",words);
+        paramMap.put("questions",questions);
 
-        List<ArticleDTO> list = namedParameterJdbcTemplate.query(QUERY_ARTICLE_BY_WORDS,paramMap,new ArticleDTOMapper());
+        List<ArticleDTO> result = namedParameterJdbcTemplate.query(QUERY_ARTICLE_BY_QUESTIONS,paramMap,new ArticleDTOMapper());
 
-        LOGGER.info("ArticleDaoImpl.getArticleByWords, result size()" + list.size());
+        if (CollectionUtils.isEmpty(result)){
+            result = namedParameterJdbcTemplate.query(QUERY_ARTICLE_BY_WORDS,paramMap,new ArticleDTOMapper());
+        }else {
+            LOGGER.info("can not get the articles by title, will try to get the articles use the key words");
+        }
 
-        return list;
+//        final StringBuilder stringBuilder = new StringBuilder();
+//        stringBuilder.append(QUERY_ARTICLE_BY_WORDS_PRE_FIX);
+//
+//        stringBuilder.append(" AND (wp_terms.name IN (:keyWords) ");
+//        for(String word : words){
+//            stringBuilder.append("OR post_title LIKE '%" + word + "%' ");
+//        }
+//        stringBuilder.append(")");
+//        stringBuilder.append(QUERY_ARTICLE_BY_WORDS_END_FIX);
+
+        LOGGER.info("ArticleDaoImpl.getArticleByWords, result size()" + result.size());
+
+        return result;
     }
 }

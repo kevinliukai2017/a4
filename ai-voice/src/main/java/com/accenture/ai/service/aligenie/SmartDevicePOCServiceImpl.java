@@ -36,16 +36,7 @@ public class SmartDevicePOCServiceImpl extends AbstractAligenieService {
 	private static final LogAgent LOGGER = LogAgent.getLogAgent(SmartDevicePOCServiceImpl.class);
 
 	@Autowired
-	SocketStatusContex socketStatusContex;
-
-    @Autowired
-    ArticleResultContex articleResultContex;
-
-	@Autowired
 	ArticleService articleService;
-
-    @Autowired
-    private WebSocketServiceImpl webSocketServiceImpl;
     
     private static final Gson GSON = new Gson();
 
@@ -93,7 +84,7 @@ public class SmartDevicePOCServiceImpl extends AbstractAligenieService {
 		} else if (isSecond(sequence)) {
 			int index = NumberUtil.chineseNumber2Int(sequence);
 			LOGGER.info("index is:" + index);
-			result.setReply(getDetailAnswer(taskQuery, any, index));
+			result.setReply(getDetailAnswer(taskQuery, index + "", index));
 			result.setResultType(ResultType.ASK_INF);
 		} else if (isBack(back)) {
 			String reply = buildBackReply(taskQuery);
@@ -104,7 +95,7 @@ public class SmartDevicePOCServiceImpl extends AbstractAligenieService {
 				String splitWords = IKAnalyzerUtil.wordSplit(any);
 				LOGGER.info("分词结果:" + splitWords);
 				List<String> words = Arrays.asList(splitWords.split(","));
-				List<ArticleDTO> articleDTOs = getArticles(words);
+				List<ArticleDTO> articleDTOs = getArticles(any, words);
 				buildReply(result,any, articleDTOs);
 			} catch (IOException e) {
 				result.setReply("分词发生异常,请联系管理员");
@@ -124,6 +115,8 @@ public class SmartDevicePOCServiceImpl extends AbstractAligenieService {
 			LOGGER.info("用户上一次输入为:" + getDialogFromSession(taskQuery).get(0).getUserInputUtterance());
 			if (!getDialogFromSession(taskQuery).get(0).getUserInputUtterance().equals("返回上一条")) {
 				reply = getDialogFromSession(taskQuery).get(1).getReplyUtterance() + "_";
+                LOGGER.info("there have no return back before");
+                articleService.getAndSendArticlesFromContext(reply);
 			} else {
 				String record = getDialogFromSession(taskQuery).get(0).getReplyUtterance().replaceAll("_", "");
 				LOGGER.info("上一条天猫精灵输出为:" + record );
@@ -137,6 +130,7 @@ public class SmartDevicePOCServiceImpl extends AbstractAligenieService {
 				LOGGER.info("后退索引为：" + (index + 1) + "size:" + getDialogFromSession(taskQuery).size());
 				if(index != -1 && index + 1 <  getDialogFromSession(taskQuery).size()){
 					reply =getDialogFromSession(taskQuery).get(index + 1).getReplyUtterance() + "_";
+                    articleService.getAndSendArticlesFromContext(reply);
 				}else{
 					LOGGER.info("历史记录里未找到：" + record);
 				}
@@ -155,43 +149,23 @@ public class SmartDevicePOCServiceImpl extends AbstractAligenieService {
 	private void buildReply(TaskResult result,String any, List<ArticleDTO> articleDTOs) {
 		if (CollectionUtils.isEmpty(articleDTOs)) {
 			LOGGER.info("分词结果未在数据库查询到相关tag");
-			result.setReply("抱歉没有找到你想要的内容");
+			result.setReply(articleService.buildReplyResult(articleDTOs));
 			result.setResultType(ResultType.ASK_INF);
 		} else if (articleDTOs.size() == 1) {
             LOGGER.info("查询到的文章，title：" + articleDTOs.get(0).getTitle() + "  url:"+articleDTOs.get(0).getUrl());
-            articleResultContex.setArticles(articleDTOs);
-            socketStatusContex.setTitleAndUrl(any, articleDTOs.get(0).getUrl());
-            //send contex to customer client
-            webSocketServiceImpl.sendContexToClient();
-			result.setReply(articleDTOs.get(0).getContent());
+            articleService.recordAndSendArticles(any,articleDTOs);
+			result.setReply(articleService.buildReplyResult(articleDTOs));
 			result.setResultType(ResultType.ASK_INF);
 		} else {
-			String titles = "";
-			for (ArticleDTO articleDTO : articleDTOs) {
-				titles += articleDTO.getTitle() + ",";
-			}
-			titles += "请问想选择哪一条";
-			// help to redirect url by socket(list page)
-            articleResultContex.setArticles(articleDTOs);
-            socketStatusContex.setTitleAndUrl(any, "/websocket/articleListFrame");
-            //send contex to customer client
-            webSocketServiceImpl.sendContexToClient();
-			result.setReply(titles);
+            articleService.recordAndSendArticles(any,articleDTOs);
+			result.setReply(articleService.buildReplyResult(articleDTOs));
 			result.setResultType(ResultType.ASK_INF);
 		}
 	}
 
-	private List<ArticleDTO> getArticles(List<String> words) {
+	private List<ArticleDTO> getArticles(String any, List<String> words) {
 		// help to get articles
-		List<ArticleDTO> res = articleService.getArticleByWords(words);
-//		ArticleDTO a = new ArticleDTO();
-//		a.setTitle("公司机票怎么定");
-//		a.setContent("公司机票怎么定");
-//		ArticleDTO b = new ArticleDTO();
-//		b.setTitle("公司有没有快消行业实施案例");
-//		b.setContent("公司有没有快消行业实施案例");
-//		res.add(a);
-//		res.add(b);
+		List<ArticleDTO> res = articleService.getArticleByWords(any, words);
 		return res;
 	}
 
@@ -207,15 +181,11 @@ public class SmartDevicePOCServiceImpl extends AbstractAligenieService {
 			// help to redirect url by socket(content page)
             String title = answers.get(index - 1);
             LOGGER.info("get detail answer by title:" + title);
-            ArticleDTO articleDetail = getArticleDetailFromContex(title);
+            ArticleDTO articleDetail = articleService.getArticleDetailFromContext(title);
             LOGGER.info("the detail answer is:" + articleDetail == null ? "" : articleDetail.getContent());
 
 			if (articleDetail != null){
-                articleResultContex.setArticles(Arrays.asList(articleDetail));
-                socketStatusContex.setTitleAndUrl(any, articleDetail.getUrl());
-                //send contex to customer client
-                webSocketServiceImpl.sendContexToClient();
-
+                articleService.recordAndSendArticles(any,Arrays.asList(articleDetail));
 			    return articleDetail.getContent();
             }
             else{
@@ -229,19 +199,6 @@ public class SmartDevicePOCServiceImpl extends AbstractAligenieService {
 	private List<ConversationRecord> getDialogFromSession(TaskQuery taskQuery) {
 		return AligenieSessionUtil.getTaskQuery(taskQuery).getConversationRecords();
 	}
-
-	private ArticleDTO getArticleDetailFromContex(final String title){
-        ArticleDTO result = null;
-        if (StringUtils.isNotEmpty(title) && articleResultContex != null && !CollectionUtils.isEmpty(articleResultContex.getArticles())){
-            for(ArticleDTO articleDTO : articleResultContex.getArticles()){
-                if (title.equals(articleDTO.getTitle())){
-                    result = articleDTO;
-                }
-            }
-        }
-
-        return result;
-    }
 
 	private boolean isSecond(String sequence) {
 		return StringUtils.isNotEmpty(sequence);
