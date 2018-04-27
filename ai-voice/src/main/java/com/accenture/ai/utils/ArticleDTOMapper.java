@@ -14,11 +14,13 @@ public class ArticleDTOMapper implements RowMapper<ArticleDTO> {
         String title = resultSet.getString("title");
         String content = resultSet.getString("content");
         String url = resultSet.getString("url");
+        String excerpt = resultSet.getString("excerpt");
 //        把数据封装成User对象
         ArticleDTO articleDTO = new ArticleDTO();
         articleDTO.setTitle(title);
         articleDTO.setContent(content);
         articleDTO.setUrl(url);
+        articleDTO.setExcerpt(excerpt);
         return articleDTO;
     }
 }

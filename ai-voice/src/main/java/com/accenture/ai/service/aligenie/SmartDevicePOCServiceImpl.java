@@ -149,6 +149,9 @@ public class SmartDevicePOCServiceImpl extends AbstractAligenieService {
 	private void buildReply(TaskResult result,String any, List<ArticleDTO> articleDTOs) {
 		if (CollectionUtils.isEmpty(articleDTOs)) {
 			LOGGER.info("分词结果未在数据库查询到相关tag");
+			LOGGER.info("===========================");
+			LOGGER.info(any);
+			LOGGER.info("===========================");
 			result.setReply(articleService.buildReplyResult(articleDTOs));
 			result.setResultType(ResultType.ASK_INF);
 		} else if (articleDTOs.size() == 1) {
@@ -186,7 +189,7 @@ public class SmartDevicePOCServiceImpl extends AbstractAligenieService {
 
 			if (articleDetail != null){
                 articleService.recordAndSendArticles(any,Arrays.asList(articleDetail));
-			    return articleDetail.getContent();
+			    return StringUtils.isNotEmpty(articleDetail.getExcerpt()) ? articleDetail.getExcerpt() : articleDetail.getContent();
             }
             else{
                 LOGGER.info("can not get detail answer by title:" + title);

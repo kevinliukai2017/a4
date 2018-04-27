@@ -27,16 +27,16 @@ public class ArticleDaoImpl implements ArticleDao {
     @Autowired
     private NamedParameterJdbcTemplate namedParameterJdbcTemplate;
 
-    private final static String QUERY_ARTICLE_BY_QUESTIONS = "SELECT post_title as title, post_content as content, guid as url " +
+    private final static String QUERY_ARTICLE_BY_QUESTIONS = "SELECT post_title as title, post_content as content, guid as url, post_excerpt as excerpt " +
             "FROM wp_posts WHERE wp_posts.post_status = 'publish' AND wp_posts.post_title = :questions";
 
-    private final static String QUERY_ARTICLE_BY_WORDS = "SELECT post_title as title, post_content as content, guid as url,count(wp_posts.ID) as count, " +
+    private final static String QUERY_ARTICLE_BY_WORDS = "SELECT post_title as title, post_content as content, guid as url, post_excerpt as excerpt,count(wp_posts.ID) as count, " +
             "wp_terms.name as tag_name FROM wp_posts JOIN wp_term_relationships ON wp_posts.ID=wp_term_relationships.object_id " +
             "JOIN wp_terms ON wp_term_relationships.term_taxonomy_id=wp_terms.term_id " +
             "WHERE wp_posts.post_status = 'publish' AND wp_terms.name IN (:keyWords) " +
             "GROUP BY wp_posts.ID ORDER BY count desc";
 
-    private final static String QUERY_ARTICLE_BY_WORDS_PRE_FIX = "SELECT post_title as title, post_content as content, guid as url,count(wp_posts.ID) as count, " +
+    private final static String QUERY_ARTICLE_BY_WORDS_PRE_FIX = "SELECT post_title as title, post_content as content, guid as url, post_excerpt as excerpt,count(wp_posts.ID) as count, " +
             "wp_terms.name as tag_name FROM wp_posts JOIN wp_term_relationships ON wp_posts.ID=wp_term_relationships.object_id " +
             "JOIN wp_terms ON wp_term_relationships.term_taxonomy_id=wp_terms.term_id " +
             "WHERE wp_posts.post_status = 'publish'";

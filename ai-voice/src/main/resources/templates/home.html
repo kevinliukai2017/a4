@@ -63,7 +63,7 @@
 			if (formatedMsg.url != '') {
 
 			    if(formatedMsg.url == $scope.data.server.url){
-                    document.getElementById('FrameID').contentWindow.location.reload(true);
+                    document.getElementById('mainiframe').contentWindow.location.reload(true);
 				}
 				else{
                     $scope.data.server.url = formatedMsg.url;

@@ -110,7 +110,11 @@ public class ArticleServiceImpl implements ArticleService{
         if (CollectionUtils.isEmpty(articleDTOs)) {
             result = "抱歉没有找到你想要的内容";
         } else if (articleDTOs.size() == 1) {
-            result = articleDTOs.get(0).getContent();
+            if (StringUtils.isNotEmpty(articleDTOs.get(0).getExcerpt())){
+                result =  articleDTOs.get(0).getExcerpt();
+            }else{
+                result = articleDTOs.get(0).getContent();
+            }
         } else {
             for (ArticleDTO articleDTO : articleDTOs) {
                 result += articleDTO.getTitle() + ",";
