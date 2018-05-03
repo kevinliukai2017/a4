@@ -52,7 +52,7 @@ public class TestController {
     @ResponseBody
     public String getAllArticles() {
 
-        String sql = "SELECT post_title as title, post_content as content, guid as url,count(wp_posts.ID) as count, " +
+        String sql = "SELECT post_title as title, post_content as content, guid as url, post_excerpt as excerpt,count(wp_posts.ID) as count, " +
                 "wp_terms.name as tag_name FROM wp_posts JOIN wp_term_relationships ON wp_posts.ID=wp_term_relationships.object_id " +
                 "JOIN wp_terms ON wp_term_relationships.term_taxonomy_id=wp_terms.term_id " +
                 "WHERE wp_posts.post_status = 'publish' AND wp_terms.name IN (:keyWords) " +
@@ -62,6 +62,7 @@ public class TestController {
         final List<String> keyWords = new ArrayList<>();
         keyWords.add("出差");
         keyWords.add("报销");
+        keyWords.add("项目");
         paramMap.put("keyWords",keyWords);
 
         List<ArticleDTO> list = namedParameterJdbcTemplate.query(sql,paramMap,new ArticleDTOMapper());
@@ -75,9 +76,13 @@ public class TestController {
 
         for(ArticleDTO entry : list){
             result += "#################################";
+            result += "<br>";
             result += entry.getTitle();
             result += "<br>";
+            result += entry.getExcerpt();
+            result += "<br>";
             result += entry.getContent();
+            result += "<br>";
             result += "<br>";
             result += "<br>";
         }
@@ -89,7 +94,7 @@ public class TestController {
     @ResponseBody
     public String getArticle() {
 
-        String sql = "SELECT post_title as title, post_content as content, guid as url,count(wp_posts.ID) as count, " +
+        String sql = "SELECT post_title as title, post_content as content, guid as url, post_excerpt as excerpt,count(wp_posts.ID) as count, " +
                 "wp_terms.name as tag_name FROM wp_posts JOIN wp_term_relationships ON wp_posts.ID=wp_term_relationships.object_id " +
                 "JOIN wp_terms ON wp_term_relationships.term_taxonomy_id=wp_terms.term_id " +
                 "WHERE wp_posts.post_status = 'publish' AND wp_terms.name IN (:keyWords) " +
@@ -111,9 +116,13 @@ public class TestController {
 
         for(ArticleDTO entry : list){
             result += "#################################";
+            result += "<br>";
             result += entry.getTitle();
             result += "<br>";
+            result += entry.getExcerpt();
+            result += "<br>";
             result += entry.getContent();
+            result += "<br>";
             result += "<br>";
             result += "<br>";
         }

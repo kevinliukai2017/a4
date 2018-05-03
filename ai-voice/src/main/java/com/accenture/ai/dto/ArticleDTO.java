@@ -4,6 +4,7 @@ public class ArticleDTO {
 
 	private String title;
 	private String content;
+	private String excerpt;
 	private String url;
 
 	public String getTitle() {
@@ -25,4 +26,12 @@ public class ArticleDTO {
 	public String getUrl() { return url; }
 
 	public void setUrl(String url) { this.url = url; }
+
+	public String getExcerpt() {
+		return excerpt;
+	}
+
+	public void setExcerpt(String excerpt) {
+		this.excerpt = excerpt;
+	}
 }
