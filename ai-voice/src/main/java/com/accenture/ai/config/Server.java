@@ -43,7 +43,7 @@ public class Server implements CommandLineRunner {
 
         //Set the port number on which we listen for requests.
         // @param port The new port number
-        connector.setPort(80);
+        connector.setPort(9191);
 
         //Set the secure connection flag that will be assigned to requests received through this connector.
         //@param secure The new secure connection flag
@@ -51,7 +51,7 @@ public class Server implements CommandLineRunner {
         connector.setSecure(true);
 
         //redirectPort The redirect port number (non-SSL to SSL)
-        connector.setRedirectPort(443);
+        connector.setRedirectPort(9192);
         return connector;
     }
     @Override
