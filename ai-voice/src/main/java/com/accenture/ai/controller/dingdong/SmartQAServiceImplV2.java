@@ -3,6 +3,7 @@ package com.accenture.ai.controller.dingdong;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -74,6 +75,9 @@ public class SmartQAServiceImplV2{
 		result.setIsEnd(false);
 		result.setSequence(taskQuery.getSequence());
 		result.setTimestamp(System.currentTimeMillis());
+		Map<String, String> extend = new HashMap<>();
+		extend.put("NO_REC", "0");
+		result.setExtend(extend);
 		
 		if (StringUtils.isEmpty(any) && StringUtils.isEmpty(sequence) && StringUtils.isEmpty(back)) {
 			

@@ -13,10 +13,13 @@ import com.accenture.ai.model.dingdong.TaskResult;
 import com.accenture.ai.utils.AligenieSessionUtil;
 import com.accenture.ai.utils.DingdongSessionUtil;
 import com.accenture.ai.utils.MetaFormat;
+import com.google.gson.Gson;
 
 @RestController
 @RequestMapping(path = "/dingdong/v1/smartqa")
 public class SmartQAController {
+	
+	private static final Gson GSON = new Gson();
 
 	/**
 	 * logger Factory
@@ -28,12 +31,13 @@ public class SmartQAController {
 
 	@RequestMapping(path = "/answer", method = { RequestMethod.POST })
 	@ResponseBody
-	public TaskResult placeOrder(@RequestBody String taskQuery) {
+	public String placeOrder(@RequestBody String taskQuery) {
 		LOGGER.info("TaskQuery:{}", taskQuery.toString());
 		TaskQuery query = MetaFormat.parseToQuery(taskQuery);
 		// prepare result
 		DingdongSessionUtil.addTaskQuery(query);
-		return smartQAServiceImpl.handle(query);
+		TaskResult result = smartQAServiceImpl.handle(query);
+		return GSON.toJson(result);
 
 	}
 
