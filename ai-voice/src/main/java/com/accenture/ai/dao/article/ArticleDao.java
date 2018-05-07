@@ -17,4 +17,8 @@ public interface ArticleDao {
      *  the articles
      */
     List<ArticleDTO> getArticleByWords(String questions, List<String> words);
+
+    List<String> getAllTag();
+
+    List<String> getTagByName(List<String> name);
 }
