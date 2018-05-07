@@ -5,7 +5,6 @@ import com.accenture.ai.service.article.InsertDataService;
 
 import org.springframework.stereotype.Component;
 
-import com.oracle.tools.packager.Log;
 import com.accenture.ai.dao.article.ArticleDao;
 
 import org.springframework.stereotype.Service;
