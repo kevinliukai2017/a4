@@ -131,14 +131,15 @@ public class FileProcessorTask {
         if (CollectionUtils.isNotEmpty(sheet)){
             //need to import two sheet , one is for tag ,another is for article
             for(Map<String, String> line : sheet){
-                //if tag sheet ,do this
-                //insertDataService.insertTagData(line);
-
                 //if article sheet .do this
                 this.getInsertDataService().insertArticleData(line);
 
                 //TODO
                 // import the article from sheet
+            }
+            //当所有文章录入后再执行相关文章的关联
+            for (Map<String,String> line :sheet){
+                this.getInsertDataService().insertReferenceArticle(line);
             }
 
         }else{

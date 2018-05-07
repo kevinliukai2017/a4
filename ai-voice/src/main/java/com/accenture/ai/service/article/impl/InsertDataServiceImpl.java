@@ -8,16 +8,14 @@ import org.springframework.stereotype.Component;
 import com.accenture.ai.dao.article.ArticleDao;
 
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
 
 import javax.annotation.Resource;
 import java.lang.reflect.Array;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * @Author: havey
@@ -84,54 +82,34 @@ public class InsertDataServiceImpl implements InsertDataService {
 
             Connection con = DriverManager.getConnection("jdbc:mysql://rm-bp1ymf161p7o36y2lto.mysql.rds.aliyuncs.com:3306/transa4?characterEncoding=utf8&useSSL=false", "transa4", "aiTP2018(]");
             // for article id and title and content
-            String articleSql = "insert into wp_posts(ID,post_title,post_content) values(?,?,?)";
+            String articleSql = "insert into wp_posts(NO,post_title,post_content) values(?,?,?)";
 
             PreparedStatement sta = con.prepareStatement(articleSql);
 
             //sta.setString(1, article.get("No"));
-            double doubleID = Double.valueOf(article.get("No"));
-            int id = (int)doubleID;
-            sta.setInt(1,id);
+            //double doubleID = Double.valueOf(article.get("No"));
+           // int id = (int)doubleID;
+            sta.setString(1,article.get("No"));
             sta.setString(2, article.get("Title"));
 
             sta.setString(3, article.get("Content"));
             int rows = sta.executeUpdate();
             if ( rows > 0) {
 
-                LOGGER.info("Tag import operate successfully!");
+                LOGGER.info("Article import operate successfully!");
 
             }
             sta.close();
 
-            //for reference article
-            for (String referenceNo : Arrays.asList(article.get("ReferenceNo").split(","))) {
-                String referenceSql = "insert into wp_yarpp_related_cache(ID,reference_ID,score) values(?,?,?)";
-                PreparedStatement staReference = con.prepareStatement(referenceSql);
-
-                staReference.setInt(1, id);
-                double doubleReID = Double.valueOf(referenceNo);
-                int ReID = (int)doubleReID;
-                //to modify
-                staReference.setInt(2, ReID);
-                staReference.setFloat(3, 2);  //score default value is 2
-
-                int referenceRows = staReference.executeUpdate();
-                if (referenceRows > 0) {
-
-                    LOGGER.info("reference article operate successfully!");
-
-                }
-                staReference.close();
-            }
 
             //for article tag
-
+            List<Integer> articleId = articleDao.getArticleIdByNo(article.get("No"));
             List<String> TagIds = this.getArticleDao().getTagByName(Arrays.asList(article.get("Tag").split(",")));
             for(String tagId : TagIds) {
                 String tag = "insert into wp_term_relationships(object_id,term_taxonomy_id) values(?,?)";
                 PreparedStatement staTag = con.prepareStatement(tag);
 
-                staTag.setInt(1, id);
+                staTag.setInt(1, articleId.get(0));
                 double DoubletagID = Double.valueOf(tagId);
                 int tagID = (int)DoubletagID;
                 staTag.setInt(2, tagID);
@@ -159,6 +137,42 @@ public class InsertDataServiceImpl implements InsertDataService {
         return null;
     }
 
+    @Override
+    public String insertReferenceArticle(Map<String, String> article) {
+        try {
+            Class.forName("com.mysql.jdbc.Driver");
+
+            Connection con = DriverManager.getConnection("jdbc:mysql://rm-bp1ymf161p7o36y2lto.mysql.rds.aliyuncs.com:3306/transa4?characterEncoding=utf8&useSSL=false", "transa4", "aiTP2018(]");
+            // for article id and title and content
+            List<Integer> articleId = articleDao.getArticleIdByNo(article.get("No"));
+            for (String referenceNo : Arrays.asList(article.get("ReferenceNo").split(","))) {
+                List<Integer> referenceId = articleDao.getArticleIdByNo(referenceNo);
+                if(!CollectionUtils.isEmpty(referenceId)){
+                String referenceSql = "insert into wp_yarpp_related_cache(ID,reference_ID,score) values(?,?,?)";
+                PreparedStatement staReference = con.prepareStatement(referenceSql);
+
+                staReference.setInt(1, articleId.get(0));
+                // double doubleReID = Double.valueOf(referenceNo);
+                // int ReID = (int)doubleReID;
+                //to modify
+                staReference.setInt(2, referenceId.get(0));
+                staReference.setFloat(3, 2);  //score default value is 2
+
+                int referenceRows = staReference.executeUpdate();
+                if (referenceRows > 0) {
+
+                    LOGGER.info("reference article operate successfully!");
+
+                }
+                staReference.close();
+            }
+            }
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+
+        return null;
+    }
 
     public boolean isTagExsit(Map<String,String> article){
         List<String> tags= this.getArticleDao().getAllTag();

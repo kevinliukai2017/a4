@@ -18,5 +18,6 @@ public interface InsertDataService {
 
     String insertTagData(String tag);
 
+    String insertReferenceArticle(Map<String,String> article);
 
 }

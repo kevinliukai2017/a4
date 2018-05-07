@@ -51,6 +51,8 @@ public class ArticleDaoImpl implements ArticleDao {
 
     private final static String QUERY_TAG_ID_BY_NAME = "SELECT term_id as id FROM wp_terms WHERE wp_terms.name = :tagName";
 
+    private final static String QUERY_ARTICLE_ID_BY_NO = "SELECT ID as id FROM wp_posts WHERE wp_posts.NO = :articleNo";
+
 
 
     @Override
@@ -116,5 +118,23 @@ public class ArticleDaoImpl implements ArticleDao {
         LOGGER.info("ArticleDaoImpl.getArticleByWords, result size()" + result.size());
 
         return result;
+    }
+
+    @Override
+    public List<Integer> getArticleIdByNo(String No) {
+
+        Map<String,Object> paramMap = new HashMap<String,Object>();
+        paramMap.put("articleNo",No);
+        List<Integer> articleIds = new ArrayList<Integer>();
+        List<Integer> result = namedParameterJdbcTemplate.query(QUERY_ARTICLE_ID_BY_NO,paramMap,new RowMapper()
+        {
+            @Override
+            public Object mapRow(ResultSet resultSet, int i) throws SQLException {
+                int articleId = resultSet.getInt("id");
+                return articleId;
+            }
+        });
+        articleIds.add(result.get(0));
+        return articleIds;
     }
 }

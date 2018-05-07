@@ -21,4 +21,6 @@ public interface ArticleDao {
     List<String> getAllTag();
 
     List<String> getTagByName(List<String> name);
+
+    List<Integer> getArticleIdByNo(String No);
 }
