@@ -7,10 +7,14 @@ import com.accenture.ai.service.aligenie.SmartDevicePOCServiceImpl;
 import com.accenture.ai.utils.ArticleDTOMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.SQLOutput;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -42,6 +46,45 @@ public class ArticleDaoImpl implements ArticleDao {
             "WHERE wp_posts.post_status = 'publish'";
 
     private final static String QUERY_ARTICLE_BY_WORDS_END_FIX = "GROUP BY wp_posts.ID ORDER BY count desc";
+
+    private final static String QUERY_ALL_TAG = "SELECT name as tag FROM wp_terms";
+
+    private final static String QUERY_TAG_ID_BY_NAME = "SELECT term_id as id FROM wp_terms WHERE wp_terms.name = :tagName";
+
+
+
+    @Override
+    public List<String> getAllTag() {
+        //TODO
+        List<String> tags = jdbcTemplate.query(QUERY_ALL_TAG, new RowMapper<String>() {
+            @Override
+            public String mapRow(ResultSet resultSet, int i) throws SQLException {
+                String tag = resultSet.getString("tag");
+                return tag;
+            }
+        });
+        return tags;
+    }
+
+    @Override
+    public List<String> getTagByName(List<String> names) {
+        Map<String,Object> paramMap = new HashMap<String, Object>();
+        List<String> TagIds = new ArrayList<String>();
+        for (String name : names) {
+            paramMap.put("tagName", name);
+            List<String> tagId = namedParameterJdbcTemplate.query(QUERY_TAG_ID_BY_NAME,paramMap,new RowMapper() {
+                @Override
+                public String mapRow(ResultSet resultSet, int i) throws SQLException {
+                    String id = resultSet.getString("id");
+                    return id;
+                }
+            });
+            TagIds.add(tagId.get(0));
+
+        }
+            return TagIds;
+
+    }
 
     @Override
     public List<ArticleDTO> getArticleByWords(String questions, List<String> words) {

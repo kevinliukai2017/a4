@@ -16,7 +16,7 @@ public interface InsertDataService {
     **/
     String insertArticleData(Map<String,String> article);
 
-    String insertTagData(Map<String,String> tag);
+    String insertTagData(String tag);
 
 
 }

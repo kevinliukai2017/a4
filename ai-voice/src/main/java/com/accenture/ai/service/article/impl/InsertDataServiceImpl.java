@@ -2,13 +2,22 @@ package com.accenture.ai.service.article.impl;
 
 import com.accenture.ai.logging.LogAgent;
 import com.accenture.ai.service.article.InsertDataService;
+
 import org.springframework.stereotype.Component;
+
+import com.oracle.tools.packager.Log;
+import com.accenture.ai.dao.article.ArticleDao;
+
 import org.springframework.stereotype.Service;
 
-
+import javax.annotation.Resource;
+import java.lang.reflect.Array;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -22,9 +31,12 @@ public class InsertDataServiceImpl implements InsertDataService {
 
     private static final LogAgent LOGGER = LogAgent.getLogAgent(InsertDataServiceImpl.class);
 
-
+    @Resource
+    ArticleDao articleDao;
     @Override
-    public String insertTagData(Map<String, String> tag) {
+    public String insertTagData(String tag) {
+        List<String> tags = new ArrayList<>();
+        tags.add(tag);
         try {
             Class.forName("com.mysql.jdbc.Driver");
 
@@ -32,26 +44,29 @@ public class InsertDataServiceImpl implements InsertDataService {
             //for tag tabel
             String tagSql = "insert into wp_terms(name) values(?)";
             PreparedStatement staTag = con.prepareStatement(tagSql);
-            staTag.setString(1, tag.get("TAG"));
+            staTag.setString(1, tag);
             int rows = staTag.executeUpdate();
+
             //for tag reference
             String tagrReference = "insert into wp_term_taxonomy(term_taxonomy_id,term_id,taxonomy) values(?,?,?)";
 
             PreparedStatement staTagRe = con.prepareStatement(tagrReference);
-            staTagRe.setString(1,tag.get("TAG_ID"));
-            staTagRe.setString(2,tag.get("TAG_ID"));
+            staTagRe.setString(1,articleDao.getTagByName(tags).get(0));
+            staTagRe.setString(2,articleDao.getTagByName(tags).get(0));
             staTagRe.setString(3,"post_tag");
 
             int ReferenceRows = staTagRe.executeUpdate();
-
-            if (rows > 0 && ReferenceRows >0) {
+            if(ReferenceRows >0) {
+                LOGGER.info("regerenceTag operate successfully");
+            }
+            if (rows > 0 ) {
 
                 LOGGER.info("operate successfully!");
 
             }
 
             staTag.close();
-            staTagRe.close();
+           // staTagRe.close();
             con.close();
 
         } catch (Exception e) {
@@ -64,6 +79,7 @@ public class InsertDataServiceImpl implements InsertDataService {
 
     @Override
     public String insertArticleData(Map<String, String> article) {
+        if (this.isTagExsit(article)) {
         try {
             Class.forName("com.mysql.jdbc.Driver");
 
@@ -73,50 +89,94 @@ public class InsertDataServiceImpl implements InsertDataService {
 
             PreparedStatement sta = con.prepareStatement(articleSql);
 
-            sta.setString(1, article.get("NO"));
+            //sta.setString(1, article.get("No"));
+            double doubleID = Double.valueOf(article.get("No"));
+            int id = (int)doubleID;
+            sta.setInt(1,id);
+            sta.setString(2, article.get("Title"));
 
-            sta.setString(2, article.get("TITLE"));
+            sta.setString(3, article.get("Content"));
+            int rows = sta.executeUpdate();
+            if ( rows > 0) {
 
-            sta.setString(3, article.get("CONTENT"));
+                LOGGER.info("Tag import operate successfully!");
+
+            }
+            sta.close();
 
             //for reference article
-            String referenceSql = "insert into wp_yarpp_related_cache(ID,reference_ID,score) values(?,?,?)";
-            PreparedStatement staReference = con.prepareStatement(referenceSql);
-            staReference.setString(1, article.get("NO"));
-            staReference.setString(2, article.get("REFERENCENO"));
-            staReference.setString(3, "2");  //score default value is 2
+            for (String referenceNo : Arrays.asList(article.get("ReferenceNo").split(","))) {
+                String referenceSql = "insert into wp_yarpp_related_cache(ID,reference_ID,score) values(?,?,?)";
+                PreparedStatement staReference = con.prepareStatement(referenceSql);
+
+                staReference.setInt(1, id);
+                double doubleReID = Double.valueOf(referenceNo);
+                int ReID = (int)doubleReID;
+                //to modify
+                staReference.setInt(2, ReID);
+                staReference.setFloat(3, 2);  //score default value is 2
+
+                int referenceRows = staReference.executeUpdate();
+                if (referenceRows > 0) {
+
+                    LOGGER.info("reference article operate successfully!");
+
+                }
+                staReference.close();
+            }
 
             //for article tag
 
-            String tag="insert into wp_term_relationships(object_id，term_taxonomy_id) values(?,？)";
-            PreparedStatement staTag = con.prepareStatement(tag);
-            staTag.setString(1,article.get("NO"));
-            staTag.setString(2,article.get("TAG"));
+            List<String> TagIds = this.getArticleDao().getTagByName(Arrays.asList(article.get("Tag").split(",")));
+            for(String tagId : TagIds) {
+                String tag = "insert into wp_term_relationships(object_id,term_taxonomy_id) values(?,?)";
+                PreparedStatement staTag = con.prepareStatement(tag);
+
+                staTag.setInt(1, id);
+                double DoubletagID = Double.valueOf(tagId);
+                int tagID = (int)DoubletagID;
+                staTag.setInt(2, tagID);
+                int TagRows = staTag.executeUpdate();
+                //int rows = sta.executeUpdate();
+               // int referenceRows = staReference.executeUpdate();
 
 
+                if ( TagRows > 0) {
 
+                    LOGGER.info("Tag import operate successfully!");
 
+                }
 
-            int rows = sta.executeUpdate();
-            int referenceRows = staReference.executeUpdate();
-            int TagRows = staTag.executeUpdate();
-
-            if (rows > 0 && referenceRows>0 && TagRows>0) {
-
-                LOGGER.info("operate successfully!");
-
+                staTag.close();
             }
-
-            sta.close();
-            staReference.close();
-            staTag.close();
             con.close();
 
         } catch (Exception e) {
             e.printStackTrace();
 
         }
+    }
 
         return null;
+    }
+
+
+    public boolean isTagExsit(Map<String,String> article){
+        List<String> tags= this.getArticleDao().getAllTag();
+        List<String> existTags = Arrays.asList(article.get("Tag").split(","));
+        for (String tag : existTags) {
+            if (!tags.contains(tag)) {
+                this.insertTagData(tag);
+            }
+        }
+        return true;
+    }
+
+    public ArticleDao getArticleDao() {
+        return articleDao;
+    }
+
+    public void setArticleDao(ArticleDao articleDao) {
+        this.articleDao = articleDao;
     }
 }

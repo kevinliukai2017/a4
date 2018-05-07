@@ -9,6 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.Message;
 import com.accenture.ai.service.article.InsertDataService;
 
+import javax.annotation.Resource;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
@@ -33,7 +34,7 @@ public class FileProcessorTask {
     @Autowired
     private File inboundArchiveDirectory;
 
-    @Autowired
+    @Resource
     private InsertDataService insertDataService;
 
 
@@ -131,10 +132,10 @@ public class FileProcessorTask {
             //need to import two sheet , one is for tag ,another is for article
             for(Map<String, String> line : sheet){
                 //if tag sheet ,do this
-                insertDataService.insertTagData(line);
+                //insertDataService.insertTagData(line);
 
                 //if article sheet .do this
-                insertDataService.insertArticleData(line);
+                this.getInsertDataService().insertArticleData(line);
 
                 //TODO
                 // import the article from sheet
@@ -147,4 +148,11 @@ public class FileProcessorTask {
         return errorList;
     }
 
+    public InsertDataService getInsertDataService() {
+        return insertDataService;
+    }
+
+    public void setInsertDataService(InsertDataService insertDataService) {
+        this.insertDataService = insertDataService;
+    }
 }
