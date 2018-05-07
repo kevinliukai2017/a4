@@ -209,7 +209,7 @@ public class SmartQAServiceImplV2{
 	private void buildDingdongInfo(TaskResult result, String replyInfo) {
 		Directive directive = new Directive();
 		DirectiveItem directiveItem = new DirectiveItem();
-		directiveItem.setType("TTS");
+		directiveItem.setType("1");
 		directiveItem.setContent(replyInfo);
 		DirectiveItem[] directiveItems = {directiveItem};
 		directive.setDirectiveItems(directiveItems);
