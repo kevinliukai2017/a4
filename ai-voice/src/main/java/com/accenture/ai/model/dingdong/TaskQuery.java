@@ -1,7 +1,12 @@
 package com.accenture.ai.model.dingdong;
 
 import java.io.Serializable;
+import java.util.List;
 import java.util.Map;
+
+import com.alibaba.da.coin.ide.spi.meta.ConversationRecord;
+import com.google.gson.annotations.Expose;
+import com.google.gson.annotations.SerializedName;
 
 public class TaskQuery implements Serializable {
 
@@ -14,13 +19,24 @@ public class TaskQuery implements Serializable {
 	private String status;
 	private String sequence;
 	private Long timestamp;
+	@SerializedName("application_info")
 	private ApplicationInfo applicationInfo;
 	private Session session;
 	private User user;
+	@SerializedName("input_text")
 	private String inputText;
 	private Map<String, String> slots;
+	
+	@SerializedName("ended_reason")
 	private String endedReason;
+	
+	
+	@SerializedName("notice_type")
 	private String noticeType;
+	private Map<String,String> extend;
+	
+	@Expose(serialize = false, deserialize = false)
+	private List<ConversationRecord> conversationRecords = null;
 
 	public String getVersionid() {
 		return versionid;
@@ -109,5 +125,24 @@ public class TaskQuery implements Serializable {
 	public void setNoticeType(String noticeType) {
 		this.noticeType = noticeType;
 	}
+
+	public Map<String, String> getExtend() {
+		return extend;
+	}
+
+	public void setExtend(Map<String, String> extend) {
+		this.extend = extend;
+	}
+
+	public List<ConversationRecord> getConversationRecords() {
+		return conversationRecords;
+	}
+
+	public void setConversationRecords(List<ConversationRecord> conversationRecords) {
+		this.conversationRecords = conversationRecords;
+	}
+	
+	
+	
 
 }

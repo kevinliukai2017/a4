@@ -3,6 +3,8 @@ package com.accenture.ai.model.dingdong;
 import java.io.Serializable;
 import java.util.Map;
 
+import com.google.gson.annotations.SerializedName;
+
 public class Session implements Serializable {
 
 	/**
@@ -10,7 +12,9 @@ public class Session implements Serializable {
 	 */
 	private static final long serialVersionUID = 4624894406900316388L;
 
+	@SerializedName("is_new")
 	private Boolean isNew;
+	@SerializedName("session_id")
 	private String sessionId;
 	private Map<String,String> attributes;
 	public Boolean getIsNew() {

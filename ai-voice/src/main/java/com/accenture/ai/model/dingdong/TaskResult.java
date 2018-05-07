@@ -3,6 +3,8 @@ package com.accenture.ai.model.dingdong;
 import java.io.Serializable;
 import java.util.Map;
 
+import com.google.gson.annotations.SerializedName;
+
 public class TaskResult implements Serializable{
 
 	/**
@@ -11,12 +13,16 @@ public class TaskResult implements Serializable{
 	private static final long serialVersionUID = -3502612342627394493L;
 	
 	private String versionid;
+	@SerializedName("is_end")
 	private Boolean isEnd;
 	private String sequence;
 	private Long timestamp;
+	@SerializedName("need_slot")
 	private String needSlot;
 	private Directive directive;
+	@SerializedName("push_to_app")
 	private Card pushToApp;
+	@SerializedName("repeat_directive")
 	private Directive repeatDirective;
 	private Map<String,String> extend;
 	public String getVersionid() {
