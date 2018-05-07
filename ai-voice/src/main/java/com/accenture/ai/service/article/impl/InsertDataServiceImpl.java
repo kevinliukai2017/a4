@@ -2,7 +2,8 @@ package com.accenture.ai.service.article.impl;
 
 import com.accenture.ai.logging.LogAgent;
 import com.accenture.ai.service.article.InsertDataService;
-import com.oracle.tools.packager.Log;
+import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
 
 
 import java.sql.Connection;
@@ -16,6 +17,7 @@ import java.util.Map;
  * @Date: Created in 9:43 PM 2018/5/5
  * @Modified By:
  **/
+@Service
 public class InsertDataServiceImpl implements InsertDataService {
 
     private static final LogAgent LOGGER = LogAgent.getLogAgent(InsertDataServiceImpl.class);
