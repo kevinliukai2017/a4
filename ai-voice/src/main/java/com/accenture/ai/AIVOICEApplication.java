@@ -6,7 +6,6 @@ import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.stereotype.Controller;
 
-@Controller
 @SpringBootApplication
 @EnableAutoConfiguration
 public class AIVOICEApplication {
