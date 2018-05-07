@@ -39,11 +39,14 @@ public class SmartQAServiceImplV2{
 		LOGGER.info("SmartDevicePOCServiceImpl start -----------");
 		Map<String, String> paramMap = taskQuery.getSlots();
 		LOGGER.info("paramMap ：" + paramMap.toString());
+		if(CollectionUtils.isEmpty(paramMap)){
+			LOGGER.info("paramMap is null----------check the reqeust");
+		}
 		// test content
 		TaskResult result = new TaskResult();
-		String any = paramMap.get("any");
-		String sequence = paramMap.get("sequence");
-		String back = paramMap.get("back");
+		String any = "any".equals(paramMap.get("type")) ? paramMap.get("value") : null;
+		String sequence = "sequence".equals(paramMap.get("type")) ? paramMap.get("value") : null  ; 
+		String back = "back".equals(paramMap.get("type")) ? paramMap.get("value") : null ; 
 		buildResult(taskQuery, result, any,sequence,back);
 		buildDingdongSession(taskQuery,result);
 		LOGGER.info("SmartDevicePOCServiceImpl end --------------");
