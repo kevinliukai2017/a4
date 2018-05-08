@@ -17,6 +17,8 @@ import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.util.*;
 
+import com.accenture.ai.constant.MDCConstants;
+
 /**
  * @Author: havey
  * @Discription:
@@ -82,6 +84,7 @@ public class InsertDataServiceImpl implements InsertDataService {
 
             Connection con = DriverManager.getConnection("jdbc:mysql://rm-bp1ymf161p7o36y2lto.mysql.rds.aliyuncs.com:3306/transa4?characterEncoding=utf8&useSSL=false", "transa4", "aiTP2018(]");
             // for article id and title and content
+
             String articleSql = "insert into wp_posts(NO,post_title,post_content) values(?,?,?)";
 
             PreparedStatement sta = con.prepareStatement(articleSql);
@@ -102,8 +105,19 @@ public class InsertDataServiceImpl implements InsertDataService {
             sta.close();
 
 
-            //for article tag
+
             List<Integer> articleId = articleDao.getArticleIdByNo(article.get("No"));
+            //insert for article url
+            String prefixUrl = MDCConstants.WP_URL;
+            String url = "update wp_posts set guid = ? WHERE ID = ?";
+            PreparedStatement staUrl = con.prepareStatement(url);
+            staUrl.setString(1,prefixUrl+articleId.get(0));
+            staUrl.setInt(2,articleId.get(0));
+            int RulRows = staUrl.executeUpdate();
+            if (RulRows > 0){
+                LOGGER.info("Guid import operate successfully!");
+            }
+            //for article tag
             List<String> TagIds = this.getArticleDao().getTagByName(Arrays.asList(article.get("Tag").split(",")));
             for(String tagId : TagIds) {
                 String tag = "insert into wp_term_relationships(object_id,term_taxonomy_id) values(?,?)";

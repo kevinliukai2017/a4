@@ -25,6 +25,8 @@ public class MDCConstants {
 	
 	public static final String INCOMING_CHANNEL = "incomingChannel";
 	public static final String INCOMING_MICROSERVICE = "incomingMicroservice";
+
+	public static final String WP_URL = "http://106.14.124.254:8080/?p=";
 	
 	
 }
