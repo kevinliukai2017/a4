@@ -1,10 +1,14 @@
 package com.accenture.ai.integration.file.processor;
 
+import com.accenture.ai.constant.ArticleConstants;
+import com.accenture.ai.dto.ArticleImportErrorData;
 import com.accenture.ai.logging.LogAgent;
 import com.accenture.ai.utils.FileMoveHelper;
 import com.accenture.ai.utils.GsonUtils;
 import com.google.gson.Gson;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.collections4.MapUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.Message;
 import com.accenture.ai.service.article.InsertDataService;
@@ -54,7 +58,7 @@ public class FileProcessorTask {
         fileOriginalFile = moveFileToFolder(fileOriginalFile, inboundProcessingDirectory.getPath());
 
         // import the articles to the database
-        List<List<Map<String, String>>> errorLists = importArticlesFromSheets(content);
+        List<List<ArticleImportErrorData>> errorLists = importArticlesFromSheets(content);
 
         // record the import result
         if (CollectionUtils.isNotEmpty(errorLists)){
@@ -96,22 +100,21 @@ public class FileProcessorTask {
      * @param sheets
      * @return
      */
-    protected List<List<Map<String, String>>> importArticlesFromSheets(List<List<Map<String, String>>> sheets){
+    protected List<List<ArticleImportErrorData>> importArticlesFromSheets(List<List<Map<String, String>>> sheets){
 
-        List<List<Map<String, String>>> errorLists = new ArrayList<>();
+        List<List<ArticleImportErrorData>> errorLists = new ArrayList<>();
 
-        if (CollectionUtils.isNotEmpty(sheets)){
-
-            for(List<Map<String, String>> sheet : sheets){
-                List<Map<String, String>> errorList = importArticlesFromSheet(sheet);
-
-                if (CollectionUtils.isNotEmpty(errorList)){
-                    errorLists.add(errorList);
-                }
-            }
-
-        }else{
+        if (CollectionUtils.isEmpty(sheets)){
             LOGGER.error("The read excel is empty, can not import the articles");
+            return errorLists;
+        }
+
+        for(List<Map<String, String>> sheet : sheets){
+            List<ArticleImportErrorData> errorList = importArticlesFromSheet(sheet);
+
+            if (CollectionUtils.isNotEmpty(errorList)){
+                errorLists.add(errorList);
+            }
         }
 
         return errorLists;
@@ -124,29 +127,102 @@ public class FileProcessorTask {
      * @param sheet
      * @return
      */
-    protected List<Map<String, String>> importArticlesFromSheet(List<Map<String, String>> sheet){
+    protected List<ArticleImportErrorData> importArticlesFromSheet(List<Map<String, String>> sheet){
 
-        List<Map<String, String>> errorList = new ArrayList<>();
+        List<ArticleImportErrorData> errorList = new ArrayList<>();
 
-        if (CollectionUtils.isNotEmpty(sheet)){
-            //need to import two sheet , one is for tag ,another is for article
-            for(Map<String, String> line : sheet){
-                //if article sheet .do this
-                this.getInsertDataService().insertArticleData(line);
-
-                //TODO
-                // import the article from sheet
-            }
-            //当所有文章录入后再执行相关文章的关联
-            for (Map<String,String> line :sheet){
-                this.getInsertDataService().insertReferenceArticle(line);
-            }
-
-        }else{
+        if (CollectionUtils.isEmpty(sheet)){
             LOGGER.error("The read excel sheet is empty, can not import the articles");
+            return errorList;
         }
 
+        //need to import two sheet , one is for tag ,another is for article
+        int i = 0;
+        for(Map<String, String> line : sheet){
+            i++;
+
+            // validate the line
+            String validateResult = validateLine(line);
+            if (StringUtils.isNotEmpty(validateResult)){
+                LOGGER.error("Fail to validate the line:" + line + " errorMessage:" + validateResult);
+                ArticleImportErrorData errorData = buildImportErrorData(line,validateResult,Long.valueOf(i));
+                errorList.add(errorData);
+                continue;
+            }
+
+            //if article sheet .do this
+            String importResult = this.getInsertDataService().insertArticleData(line);
+            if (StringUtils.isNotEmpty(importResult)){
+                LOGGER.error("Fail to import the line:" + line + " errorMessage:" + importResult);
+                ArticleImportErrorData errorData = buildImportErrorData(line,importResult,Long.valueOf(i));
+                errorList.add(errorData);
+                continue;
+            }
+        }
+
+        //当所有文章录入后再执行相关文章的关联
+        for (Map<String,String> line :sheet){
+            this.getInsertDataService().insertReferenceArticle(line);
+        }
+
+
         return errorList;
+    }
+
+    /**
+     * build the import error data
+     *
+     * @param line
+     * @param errorMessage
+     * @param lineNum
+     * @return
+     */
+    protected ArticleImportErrorData buildImportErrorData(Map<String, String> line, String errorMessage, Long lineNum){
+
+        if (MapUtils.isNotEmpty(line) && StringUtils.isNotEmpty(errorMessage) && lineNum != null){
+
+            ArticleImportErrorData result = new ArticleImportErrorData();
+            result.setLine(line);
+            result.setErrorMessage(errorMessage);
+            result.setLineNum(lineNum);
+
+            return  result;
+        }
+
+        return null;
+    }
+
+    /**
+     * validate the line to check is there have some data issue.
+     *
+     * @param line
+     * @return
+     */
+    protected String validateLine(Map<String, String> line){
+
+        StringBuilder errorMessage = new StringBuilder();
+
+        if (!line.containsKey(ArticleConstants.Excel.Title.NO)
+                || StringUtils.isEmpty(line.get(ArticleConstants.Excel.Title.NO))){
+            errorMessage.append("The No is empty.");
+        }
+
+        if (!line.containsKey(ArticleConstants.Excel.Title.CONTENT)
+                || StringUtils.isEmpty(line.get(ArticleConstants.Excel.Title.CONTENT))){
+            errorMessage.append("The Content is empty.");
+        }
+
+        if (!line.containsKey(ArticleConstants.Excel.Title.TITLE)
+                || StringUtils.isEmpty(line.get(ArticleConstants.Excel.Title.TITLE))){
+            errorMessage.append("The Title is empty.");
+        }
+
+        if (!line.containsKey(ArticleConstants.Excel.Title.TAG)
+                || StringUtils.isEmpty(line.get(ArticleConstants.Excel.Title.TAG))){
+            errorMessage.append("The Tag is empty.");
+        }
+
+        return errorMessage.toString();
     }
 
     public InsertDataService getInsertDataService() {
