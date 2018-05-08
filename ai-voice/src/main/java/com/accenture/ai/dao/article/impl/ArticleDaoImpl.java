@@ -134,7 +134,9 @@ public class ArticleDaoImpl implements ArticleDao {
                 return articleId;
             }
         });
-        articleIds.add(result.get(0));
+        if(result.size()>0) {
+            articleIds.add(result.get(0));
+        }
         return articleIds;
     }
 }
