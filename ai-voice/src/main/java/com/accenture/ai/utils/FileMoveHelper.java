@@ -18,8 +18,9 @@ public class FileMoveHelper {
             LOGGER.error("moveFileToFolder(File file, String to), the file is a directory");
         }else{
             try{
-                File toFile = new File(to);
+                File toFile = new File(to +File.separator+ file.getName());
                 file.renameTo(toFile);
+                //file.delete();
                 return file;
             }catch (Exception e) {
                 System.out.println("文件："+ file + "未找到");
