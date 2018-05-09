@@ -170,7 +170,7 @@ public class InsertDataServiceImpl implements InsertDataService {
                 // int ReID = (int)doubleReID;
                 //to modify
                 staReference.setInt(2, referenceId.get(0));
-                staReference.setFloat(3, 2);  //score default value is 2
+                staReference.setFloat(3, 5);  //score default value is 5
 
                 int referenceRows = staReference.executeUpdate();
                 if (referenceRows > 0) {

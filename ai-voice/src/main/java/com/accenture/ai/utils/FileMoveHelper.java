@@ -9,19 +9,21 @@ public class FileMoveHelper {
 
     private static final LogAgent LOGGER = LogAgent.getLogAgent(FileMoveHelper.class);
 
-    public static File moveFileToFolder(File file, String to) throws Exception {
+    public static File moveFileToFolder(File file, String to, String fileName) throws Exception {
         if (file == null){
-            LOGGER.error("moveFileToFolder(File file, String to), the file is null");
+            LOGGER.error("moveFileToFolder(File file, String to, String fileName), the file is null");
         }else if (StringUtils.isEmpty(to)){
-            LOGGER.error("moveFileToFolder(File file, String to), the to folder is null");
+            LOGGER.error("moveFileToFolder(File file, String to, String fileName), the to folder is null");
         }else if (file.isDirectory()){
-            LOGGER.error("moveFileToFolder(File file, String to), the file is a directory");
+            LOGGER.error("moveFileToFolder(File file, String to, String fileName), the file is a directory");
+        }else if (StringUtils.isEmpty(fileName)){
+            LOGGER.error("moveFileToFolder(File file, String to, String fileName), the fileName is a directory");
         }else{
             try{
-                File toFile = new File(to +File.separator+ file.getName());
+                File toFile = new File(to +File.separator+ fileName);
                 file.renameTo(toFile);
                 //file.delete();
-                return file;
+                return toFile;
             }catch (Exception e) {
                 System.out.println("文件："+ file + "未找到");
             }

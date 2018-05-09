@@ -3,6 +3,7 @@ package com.accenture.ai.integration.file.processor;
 import com.accenture.ai.constant.ArticleConstants;
 import com.accenture.ai.dto.ArticleImportErrorData;
 import com.accenture.ai.logging.LogAgent;
+import com.accenture.ai.utils.ExcelWriteHelper;
 import com.accenture.ai.utils.FileMoveHelper;
 import com.accenture.ai.utils.GsonUtils;
 import com.google.gson.Gson;
@@ -15,9 +16,8 @@ import com.accenture.ai.service.article.InsertDataService;
 
 import javax.annotation.Resource;
 import java.io.File;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
+import java.io.IOException;
+import java.util.*;
 
 public class FileProcessorTask {
 
@@ -55,26 +55,56 @@ public class FileProcessorTask {
         LOGGER.info("The read content is:" + (new Gson()).toJson(content));
 
         // move the file to processing folder
-        fileOriginalFile = moveFileToFolder(fileOriginalFile, inboundProcessingDirectory.getPath());
+        fileOriginalFile = moveFileToFolder(fileOriginalFile, inboundProcessingDirectory.getPath(),fileOriginalFile.getName());
 
         // import the articles to the database
-        List<List<ArticleImportErrorData>> errorLists = importArticlesFromSheets(content);
+        Map<Long,List<ArticleImportErrorData>> errorLists = importArticlesFromSheets(content);
 
         // record the import result
-        if (CollectionUtils.isNotEmpty(errorLists)){
+        if (MapUtils.isNotEmpty(errorLists)){
             LOGGER.error("There have some error when import the articles");
 
             // move the file to error folder
-            fileOriginalFile = moveFileToFolder(fileOriginalFile, inboundErrorDirectory.getPath());
+            fileOriginalFile = writeErrorMessageToFile(fileOriginalFile, errorLists);
 
-            //TODO
-            // write the error to file
         }else{
+            LOGGER.info("Import articles success");
             // move the file to archive folder
-            fileOriginalFile = moveFileToFolder(fileOriginalFile, inboundArchiveDirectory.getPath());
+            fileOriginalFile = archiveFile(fileOriginalFile);
         }
 
+    }
 
+    /**
+     * write the error message to file
+     *
+     * @param file
+     * @param errorLists
+     * @return
+     */
+    protected File writeErrorMessageToFile(File file, Map<Long,List<ArticleImportErrorData>> errorLists){
+
+        try {
+            // write the error message
+            ExcelWriteHelper.writeExcel(file.getPath(),errorLists);
+
+            //move the file
+            return moveFileToFolder(file,inboundErrorDirectory.getPath(),file.getName()+ (new Date()).getTime() + "error");
+        } catch (IOException e) {
+            LOGGER.error("Failed to write the error message to file");
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    /**
+     * archive the imported file
+     *
+     * @param file
+     * @return
+     */
+    protected File archiveFile(File file){
+        return moveFileToFolder(file,inboundArchiveDirectory.getPath(),file.getName() + (new Date()).getTime());
     }
 
     /**
@@ -82,13 +112,14 @@ public class FileProcessorTask {
      *
      * @param file
      * @param to
+     * @param fileName
      * @return
      */
-    protected File moveFileToFolder(File file, String to){
+    protected File moveFileToFolder(File file, String to, String fileName){
         try {
-            return FileMoveHelper.moveFileToFolder(file, inboundProcessingDirectory.getPath());
+            return FileMoveHelper.moveFileToFolder(file, to, fileName);
         } catch (Exception e) {
-            LOGGER.error("Failed to move the file from root folder to processing folder. to:"+to);
+            LOGGER.error("Failed to move the file from root folder to processing folder. to:" + to);
             e.printStackTrace();
             return null;
         }
@@ -100,21 +131,24 @@ public class FileProcessorTask {
      * @param sheets
      * @return
      */
-    protected List<List<ArticleImportErrorData>> importArticlesFromSheets(List<List<Map<String, String>>> sheets){
+    protected Map<Long,List<ArticleImportErrorData>> importArticlesFromSheets(List<List<Map<String, String>>> sheets){
 
-        List<List<ArticleImportErrorData>> errorLists = new ArrayList<>();
+        Map<Long,List<ArticleImportErrorData>> errorLists = new HashMap<>();
 
         if (CollectionUtils.isEmpty(sheets)){
             LOGGER.error("The read excel is empty, can not import the articles");
             return errorLists;
         }
 
+        int i = 0;
         for(List<Map<String, String>> sheet : sheets){
             List<ArticleImportErrorData> errorList = importArticlesFromSheet(sheet);
 
             if (CollectionUtils.isNotEmpty(errorList)){
-                errorLists.add(errorList);
+                errorLists.put(Long.valueOf(i),errorList);
             }
+
+            i++;
         }
 
         return errorLists;
@@ -136,6 +170,8 @@ public class FileProcessorTask {
             return errorList;
         }
 
+        final List<Map<String, String>> leftLines = new ArrayList<>();
+
         //need to import two sheet , one is for tag ,another is for article
         int i = 0;
         for(Map<String, String> line : sheet){
@@ -150,6 +186,13 @@ public class FileProcessorTask {
                 continue;
             }
 
+            leftLines.add(line);
+
+        }
+
+        //import the article first
+        for (Map<String,String> line :leftLines){
+
             //if article sheet .do this
             String importResult = this.getInsertDataService().insertArticleData(line);
             if (StringUtils.isNotEmpty(importResult)){
@@ -158,13 +201,22 @@ public class FileProcessorTask {
                 errorList.add(errorData);
                 continue;
             }
+
         }
 
         //当所有文章录入后再执行相关文章的关联
-        for (Map<String,String> line :sheet){
-            this.getInsertDataService().insertReferenceArticle(line);
-        }
+        for (Map<String,String> line :leftLines){
 
+            //if article sheet .do this
+            String importResult = this.getInsertDataService().insertReferenceArticle(line);
+            if (StringUtils.isNotEmpty(importResult)){
+                LOGGER.error("Fail to import the Reference:" + line + " errorMessage:" + importResult);
+                ArticleImportErrorData errorData = buildImportErrorData(line,importResult,Long.valueOf(i));
+                errorList.add(errorData);
+                continue;
+            }
+
+        }
 
         return errorList;
     }

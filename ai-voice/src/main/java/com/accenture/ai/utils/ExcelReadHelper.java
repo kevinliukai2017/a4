@@ -60,6 +60,9 @@ public class ExcelReadHelper {
                     if (j == 0) {//第一行是标题行
                         for (int k = 0; k < cellSize; k++) {
                             Cell cell = row.getCell(k);
+                            if (cell == null){//略过空列
+                                continue;
+                            }
                             titles.add(cell.toString());
                         }
                     } else {//其他行是数据行
