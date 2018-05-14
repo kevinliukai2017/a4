@@ -52,40 +52,31 @@ public class TestController {
     @ResponseBody
     public String getAllArticles() {
 
-        String sql = "SELECT post_title as title, post_content as content, guid as url, post_excerpt as excerpt,count(wp_posts.ID) as count, " +
-                "wp_terms.name as tag_name FROM wp_posts JOIN wp_term_relationships ON wp_posts.ID=wp_term_relationships.object_id " +
+        String sql = "SELECT article1.ID as id, article1.post_title as title, article1.post_content as content, article1.guid as url, " +
+                "article1.post_excerpt as excerpt, count(article1.ID) as count, " +
+                "wp_terms.name as tag_name, article2.ID as re_id, article2.post_title as re_title, article2.post_content as re_content, article2.guid as re_url, article2.post_excerpt as re_excerpt " +
+                "FROM wp_posts AS article1 JOIN wp_term_relationships ON article1.ID=wp_term_relationships.object_id " +
                 "JOIN wp_terms ON wp_term_relationships.term_taxonomy_id=wp_terms.term_id " +
-                "WHERE wp_posts.post_status = 'publish' AND wp_terms.name IN (:keyWords) " +
-                "GROUP BY wp_posts.ID ORDER BY count desc";
+                "JOIN wp_yarpp_related_cache ON article1.ID=wp_yarpp_related_cache.reference_ID " +
+                "JOIN wp_posts AS article2 ON article2.ID=wp_yarpp_related_cache.ID " +
+                "WHERE article1.post_status = 'publish' AND wp_terms.name IN (:keyWords) " +
+                "GROUP BY article1.ID,article2.ID ORDER BY count desc";
         Map<String, Object> paramMap = new HashMap<String, Object>();
 
         final List<String> keyWords = new ArrayList<>();
-        keyWords.add("出差");
-        keyWords.add("报销");
-        keyWords.add("项目");
+        keyWords.add("交通");
+        keyWords.add("停车");
         paramMap.put("keyWords",keyWords);
 
-        List<ArticleDTO> list = namedParameterJdbcTemplate.query(sql,paramMap,new ArticleDTOMapper());
+        List<Map<String,Object>> articleMap = namedParameterJdbcTemplate.query(sql,paramMap,new ArticleDTOMapper());
+        final List<ArticleDTO> list = populateArticles(articleMap);
 
         articleResultContex.setArticles(list);
         socketStatusContex.setTitleAndUrl("文章列表", "/websocket/articleListFrame");
         //send contex to customer client
         webSocketServiceImpl.sendContexToClient();
 
-        String result = "";
-
-        for(ArticleDTO entry : list){
-            result += "#################################";
-            result += "<br>";
-            result += entry.getTitle();
-            result += "<br>";
-            result += entry.getExcerpt();
-            result += "<br>";
-            result += entry.getContent();
-            result += "<br>";
-            result += "<br>";
-            result += "<br>";
-        }
+        String result = (new Gson()).toJson(list);
 
         return result;
     }
@@ -94,40 +85,75 @@ public class TestController {
     @ResponseBody
     public String getArticle() {
 
-        String sql = "SELECT post_title as title, post_content as content, guid as url, post_excerpt as excerpt,count(wp_posts.ID) as count, " +
-                "wp_terms.name as tag_name FROM wp_posts JOIN wp_term_relationships ON wp_posts.ID=wp_term_relationships.object_id " +
-                "JOIN wp_terms ON wp_term_relationships.term_taxonomy_id=wp_terms.term_id " +
-                "WHERE wp_posts.post_status = 'publish' AND wp_terms.name IN (:keyWords) " +
-                "GROUP BY wp_posts.ID ORDER BY count desc";
+        String sql = "SELECT article1.ID as id, article1.post_title as title, article1.post_content as content, article1.guid as url, article1.post_excerpt as excerpt, " +
+                "article2.ID as re_id, article2.post_title as re_title, article2.post_content as re_content, article2.guid as re_url, article2.post_excerpt as re_excerpt " +
+                "FROM wp_posts AS article1 JOIN wp_yarpp_related_cache ON article1.ID=wp_yarpp_related_cache.reference_ID " +
+                "JOIN wp_posts AS article2 ON article2.ID=wp_yarpp_related_cache.ID WHERE article1.post_status = 'publish' AND article1.post_title = :questions";
         Map<String, Object> paramMap = new HashMap<String, Object>();
 
-        final List<String> keyWords = new ArrayList<>();
-        keyWords.add("报销");
-        paramMap.put("keyWords",keyWords);
+        paramMap.put("questions","公司附近哪里停车便宜");
 
-        List<ArticleDTO> list = namedParameterJdbcTemplate.query(sql,paramMap,new ArticleDTOMapper());
+        List<Map<String,Object>> articleMap = namedParameterJdbcTemplate.query(sql,paramMap,new ArticleDTOMapper());
+
+        final List<ArticleDTO> list = populateArticles(articleMap);
 
         articleResultContex.setArticles(Arrays.asList(list.get(0)));
         socketStatusContex.setTitleAndUrl("文章列表", list.get(0).getUrl());
         //send contex to customer client
         webSocketServiceImpl.sendContexToClient();
 
-        String result = "";
-
-        for(ArticleDTO entry : list){
-            result += "#################################";
-            result += "<br>";
-            result += entry.getTitle();
-            result += "<br>";
-            result += entry.getExcerpt();
-            result += "<br>";
-            result += entry.getContent();
-            result += "<br>";
-            result += "<br>";
-            result += "<br>";
-        }
+        String result = (new Gson()).toJson(list);
 
         return result;
+    }
+
+    /**
+     * populate the articles to DTO
+     *
+     * @param articleMap
+     * @return
+     */
+    protected List<ArticleDTO> populateArticles(List<Map<String,Object>> articleMap){
+
+        final Map<Long,ArticleDTO> result = new HashMap<>();
+
+        for(Map<String,Object> entry: articleMap){
+            if (entry.containsKey("id")){
+                final Long main_id = (Long)entry.get("id");
+                if (result.containsKey(main_id)){
+                    final ArticleDTO relatedArticle = new ArticleDTO();
+                    relatedArticle.setId((Long)entry.get("re_id"));
+                    relatedArticle.setUrl((String)entry.get("re_url"));
+                    relatedArticle.setExcerpt((String)entry.get("re_excerpt"));
+                    relatedArticle.setTitle((String)entry.get("re_title"));
+                    relatedArticle.setContent((String)entry.get("re_content"));
+                    result.get(main_id).getRelatedArticles().add(relatedArticle);
+                }else{
+                    final ArticleDTO mainArticle = new ArticleDTO();
+
+                    mainArticle.setId(main_id);
+                    mainArticle.setUrl((String)entry.get("url"));
+                    mainArticle.setExcerpt((String)entry.get("excerpt"));
+                    mainArticle.setTitle((String)entry.get("title"));
+                    mainArticle.setContent((String)entry.get("content"));
+
+                    final List<ArticleDTO> relatedArticles = new ArrayList<>();
+                    final ArticleDTO relatedArticle = new ArticleDTO();
+                    relatedArticle.setId((Long)entry.get("re_id"));
+                    relatedArticle.setUrl((String)entry.get("re_url"));
+                    relatedArticle.setExcerpt((String)entry.get("re_excerpt"));
+                    relatedArticle.setTitle((String)entry.get("re_title"));
+                    relatedArticle.setContent((String)entry.get("re_content"));
+                    relatedArticles.add(relatedArticle);
+
+                    mainArticle.setRelatedArticles(relatedArticles);
+
+                    result.put(main_id,mainArticle);
+                }
+            }
+        }
+
+        return new ArrayList<>(result.values());
     }
 
     @RequestMapping(value = "/success",method = RequestMethod.GET)

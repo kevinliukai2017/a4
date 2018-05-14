@@ -1,11 +1,7 @@
 package com.accenture.ai.controller.dingdong;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -36,19 +32,43 @@ public class SmartQAServiceImplV2{
     private static final Gson GSON = new Gson();
 
 	public TaskResult handle(TaskQuery taskQuery) {
-		LOGGER.info("SmartDevicePOCServiceImpl start -----------");
-		Map<String, String> paramMap = taskQuery.getSlots();
-		LOGGER.info("paramMap ：" + paramMap.toString());
-		if(CollectionUtils.isEmpty(paramMap)){
-			LOGGER.info("paramMap is null----------check the reqeust");
-		}
-		// test content
 		TaskResult result = new TaskResult();
-		String any = "any".equals(paramMap.get("type")) ? paramMap.get("value") : null;
-		String sequence = "sequence".equals(paramMap.get("type")) ? paramMap.get("value") : null  ; 
-		String back = "back".equals(paramMap.get("type")) ? paramMap.get("value") : null ; 
-		buildResult(taskQuery, result, any,sequence,back);
-		buildDingdongSession(taskQuery,result);
+		LOGGER.info("SmartDevicePOCServiceImpl start -----------");
+
+		if ("NOTICE".equals(taskQuery.getStatus())){
+            LOGGER.info("The request status is NOTICE needn't to reply, will return empty content----------check the reqeust");
+		    return result;
+        }
+
+		Map<String, String> paramMap = taskQuery.getSlots();
+
+		if(CollectionUtils.isEmpty(paramMap)){
+			LOGGER.info("The paramMap(slots) is null, will return empty content----------check the reqeust");
+            buildEmptyDingdongInfo(result,taskQuery);
+			return result;
+		}
+		LOGGER.info("paramMap ：" + paramMap.toString());
+
+        String any = null;
+		if ("other_any".equals(paramMap.get("type"))){
+		    if (paramMap.get("value").startsWith("请问")){
+                any = paramMap.get("value").replaceFirst("请问","");
+            }else{
+                LOGGER.info("The request is not first request and is not start with 请问, will return empty content----------check the reqeust");
+                buildEmptyDingdongInfo(result,taskQuery);
+                return result;
+            }
+        }
+        else if ("first_any".equals(paramMap.get("type"))){
+            any = paramMap.get("value");
+        }
+        String sequence = "sequence".equals(paramMap.get("type")) ? paramMap.get("value") : null  ;
+        String back = "back".equals(paramMap.get("type")) ? paramMap.get("value") : null ;
+
+        LOGGER.info("buildResult() any" + any +", sequence:" + sequence + ", back:" + back);
+        buildResult(taskQuery, result, any, sequence, back);
+        buildDingdongSession(taskQuery,result);
+
 		LOGGER.info("SmartDevicePOCServiceImpl end --------------");
 		return result;
 	}
@@ -84,7 +104,7 @@ public class SmartQAServiceImplV2{
 		
 		if (StringUtils.isEmpty(any) && StringUtils.isEmpty(sequence) && StringUtils.isEmpty(back)) {
 			
-			buildDingdongInfo(result,"请告诉我你要干嘛，比如 天猫精灵 智能问答 请问如何填写时间成本");
+			buildDingdongInfo(result,"请告诉我你要干嘛，比如 叮咚叮咚 让小哲同学告诉我 如何填写时间成本");
 			
 		} else if (isSecond(sequence)) {
 			int index = NumberUtil.chineseNumber2Int(sequence);
@@ -191,7 +211,7 @@ public class SmartQAServiceImplV2{
             String title = answers.get(index - 1);
             LOGGER.info("get detail answer by title:" + title);
             ArticleDTO articleDetail = articleService.getArticleDetailFromContext(title);
-            LOGGER.info("the detail answer is:" + articleDetail == null ? "" : articleDetail.getContent());
+            LOGGER.info("the detail answer is:" + (Objects.isNull(articleDetail) ? "" : articleDetail.getContent()));
 
 			if (articleDetail != null){
                 articleService.recordAndSendArticles(any,Arrays.asList(articleDetail));
@@ -222,5 +242,23 @@ public class SmartQAServiceImplV2{
 		directive.setDirectiveItems(directiveItems);
 		result.setDirective(directive);
 	}
+
+	private void buildEmptyDingdongInfo(TaskResult result,TaskQuery taskQuery){
+        result.setVersionid(taskQuery.getVersionid());
+        result.setIsEnd(false);
+        result.setSequence(taskQuery.getSequence());
+        result.setTimestamp(System.currentTimeMillis());
+        Map<String, String> extend = new HashMap<>();
+        extend.put("NO_REC", "0");
+        result.setExtend(extend);
+
+        Directive directive = new Directive();
+        DirectiveItem directiveItem = new DirectiveItem();
+        directiveItem.setType("1");
+        directiveItem.setContent("");
+        DirectiveItem[] directiveItems = {directiveItem};
+        directive.setDirectiveItems(directiveItems);
+        result.setDirective(directive);
+    }
 	
 }

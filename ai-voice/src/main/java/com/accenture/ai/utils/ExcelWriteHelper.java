@@ -10,8 +10,6 @@ import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
-import org.apache.poi.xssf.usermodel.XSSFRow;
-import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
 import java.io.FileInputStream;
@@ -69,8 +67,13 @@ public class ExcelWriteHelper {
 
                 for(ArticleImportErrorData errorData : CollectionUtils.emptyIfNull(sheetErrorData.getValue())){
                     Row row = sheet.getRow(errorData.getLineNum().intValue());
-                    Cell cell = row.createCell(errorCellNum);
-                    cell.setCellValue(errorData.getErrorMessage());
+                    if (row != null){
+                        Cell cell = row.createCell(errorCellNum);
+                        cell.setCellValue(errorData.getErrorMessage());
+                    }else{
+                        LOGGER.error("Can not write the error message, because of the row is null");
+                    }
+
                 }
 
             }

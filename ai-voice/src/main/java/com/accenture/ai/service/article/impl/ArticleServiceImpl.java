@@ -7,10 +7,12 @@ import com.accenture.ai.service.aligenie.WebSocketServiceImpl;
 import com.accenture.ai.service.article.ArticleService;
 import com.accenture.ai.utils.ArticleResultContex;
 import com.accenture.ai.utils.SocketStatusContex;
+import com.google.gson.Gson;
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.util.CollectionUtils;
+
 
 import java.util.Collections;
 import java.util.List;
@@ -34,7 +36,42 @@ public class ArticleServiceImpl implements ArticleService{
 
     @Override
     public List<ArticleDTO> getArticleByWords(String questions, List<String> words) {
-        return articleDao.getArticleByWords(questions, words);
+        final List<ArticleDTO> articles = articleDao.getArticleByWords(questions, words);
+
+        final List<ArticleDTO> result = rebuildArticleByRelated(articles);
+
+        LOGGER.info("getArticleByWords rebuild result:"+ (new Gson()).toJson(result));
+
+        return result;
+    }
+
+    /**
+     * rebuild the article to contact with the related articles
+     *
+     * @param articles
+     * @return
+     */
+    protected List<ArticleDTO> rebuildArticleByRelated(List<ArticleDTO> articles){
+
+        for(ArticleDTO articleDTO : articles){
+
+            if (CollectionUtils.isNotEmpty(articleDTO.getRelatedArticles())){
+                final StringBuilder stringBuilder = new StringBuilder();
+                stringBuilder.append(" 您是否对以下内容感兴趣");
+                for(ArticleDTO reArticleDTO : articleDTO.getRelatedArticles()){
+                    stringBuilder.append(" " + reArticleDTO.getTitle());
+                }
+
+                if (StringUtils.isNotEmpty(articleDTO.getExcerpt())){
+                    articleDTO.setExcerpt(articleDTO.getExcerpt() + stringBuilder.toString());
+                }else{
+                    articleDTO.setContent(articleDTO.getContent() + stringBuilder.toString());
+                }
+            }
+
+        }
+
+        return articles;
     }
 
     @Override
@@ -89,7 +126,7 @@ public class ArticleServiceImpl implements ArticleService{
     @Override
     public ArticleDTO getArticleDetailFromContext(String title) {
         ArticleDTO result = null;
-        if (org.apache.commons.lang.StringUtils.isNotEmpty(title) && articleResultContex != null && !CollectionUtils.isEmpty(articleResultContex.getArticles())){
+        if (StringUtils.isNotEmpty(title) && articleResultContex != null && !CollectionUtils.isEmpty(articleResultContex.getArticles())){
             for(ArticleDTO articleDTO : articleResultContex.getArticles()){
                 if (title.equals(articleDTO.getTitle())){
                     result = articleDTO;

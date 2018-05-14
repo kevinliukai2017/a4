@@ -1,13 +1,25 @@
 package com.accenture.ai.dto;
 
+import java.util.List;
+
 public class ArticleDTO {
 
+    private Long id;
 	private String title;
 	private String content;
 	private String excerpt;
 	private String url;
+	private List<ArticleDTO> relatedArticles;
 
-	public String getTitle() {
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public String getTitle() {
 		return title;
 	}
 
@@ -33,5 +45,13 @@ public class ArticleDTO {
 
 	public void setExcerpt(String excerpt) {
 		this.excerpt = excerpt;
+	}
+
+	public List<ArticleDTO> getRelatedArticles() {
+		return relatedArticles;
+	}
+
+	public void setRelatedArticles(List<ArticleDTO> relatedArticles) {
+		this.relatedArticles = relatedArticles;
 	}
 }

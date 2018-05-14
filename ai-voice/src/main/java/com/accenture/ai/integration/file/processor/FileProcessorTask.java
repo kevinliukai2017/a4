@@ -202,6 +202,8 @@ public class FileProcessorTask {
                 continue;
             }
 
+            LOGGER.info("Import article success");
+
         }
 
         //当所有文章录入后再执行相关文章的关联
@@ -215,6 +217,8 @@ public class FileProcessorTask {
                 errorList.add(errorData);
                 continue;
             }
+
+            LOGGER.info("Import Reference success");
 
         }
 
