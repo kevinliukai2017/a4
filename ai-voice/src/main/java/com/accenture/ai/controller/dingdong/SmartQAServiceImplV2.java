@@ -3,6 +3,7 @@ package com.accenture.ai.controller.dingdong;
 import java.io.IOException;
 import java.util.*;
 
+import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -42,7 +43,7 @@ public class SmartQAServiceImplV2{
 
 		Map<String, String> paramMap = taskQuery.getSlots();
 
-		if(CollectionUtils.isEmpty(paramMap)){
+		if(MapUtils.isEmpty(paramMap)){
 			LOGGER.info("The paramMap(slots) is null, will return empty content----------check the reqeust");
             buildEmptyDingdongInfo(result,taskQuery);
 			return result;
@@ -61,11 +62,17 @@ public class SmartQAServiceImplV2{
         }
         else if ("first_any".equals(paramMap.get("type"))){
             any = paramMap.get("value");
+        }else if ("any".equals(paramMap.get("type"))){
+            if (paramMap.get("value").startsWith("请问")){
+                any = paramMap.get("value").replaceFirst("请问","");
+            }else{
+                any = paramMap.get("value");
+            }
         }
         String sequence = "sequence".equals(paramMap.get("type")) ? paramMap.get("value") : null  ;
         String back = "back".equals(paramMap.get("type")) ? paramMap.get("value") : null ;
 
-        LOGGER.info("buildResult() any" + any +", sequence:" + sequence + ", back:" + back);
+        LOGGER.info("buildResult() any:" + any +", sequence:" + sequence + ", back:" + back);
         buildResult(taskQuery, result, any, sequence, back);
         buildDingdongSession(taskQuery,result);
 

@@ -6,6 +6,7 @@ import com.accenture.ai.logging.LogAgent;
 import com.accenture.ai.service.aligenie.SmartDevicePOCServiceImpl;
 import com.accenture.ai.utils.ArticleDTOMapper;
 import com.google.gson.Gson;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
@@ -16,10 +17,7 @@ import org.springframework.util.CollectionUtils;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.SQLOutput;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @Service
 public class ArticleDaoImpl implements ArticleDao {
@@ -34,17 +32,17 @@ public class ArticleDaoImpl implements ArticleDao {
 
     private final static String QUERY_ARTICLE_BY_QUESTIONS = "SELECT article1.ID as id, article1.post_title as title, article1.post_content as content, article1.guid as url, article1.post_excerpt as excerpt, " +
             "article2.ID as re_id, article2.post_title as re_title, article2.post_content as re_content, article2.guid as re_url, article2.post_excerpt as re_excerpt " +
-            "FROM wp_posts AS article1 JOIN wp_yarpp_related_cache ON article1.ID=wp_yarpp_related_cache.reference_ID " +
-            "JOIN wp_posts AS article2 ON article2.ID=wp_yarpp_related_cache.ID WHERE article1.post_status = 'publish' AND article1.post_title = :questions";
+            "FROM wp_posts AS article1 LEFT JOIN wp_yarpp_related_cache ON article1.ID=wp_yarpp_related_cache.reference_ID " +
+            "LEFT JOIN wp_posts AS article2 ON article2.ID=wp_yarpp_related_cache.ID WHERE article1.post_status = 'publish' AND article1.post_title = :questions";
 
 
     private final static String QUERY_ARTICLE_BY_WORDS = "SELECT article1.ID as id, article1.post_title as title, article1.post_content as content, article1.guid as url, " +
             "article1.post_excerpt as excerpt, count(article1.ID) as count, " +
             "wp_terms.name as tag_name, article2.ID as re_id, article2.post_title as re_title, article2.post_content as re_content, article2.guid as re_url, article2.post_excerpt as re_excerpt " +
             "FROM wp_posts AS article1 JOIN wp_term_relationships ON article1.ID=wp_term_relationships.object_id " +
-            "JOIN wp_terms ON wp_term_relationships.term_taxonomy_id=wp_terms.term_id " +
-            "JOIN wp_yarpp_related_cache ON article1.ID=wp_yarpp_related_cache.reference_ID " +
-            "JOIN wp_posts AS article2 ON article2.ID=wp_yarpp_related_cache.ID " +
+            "LEFT JOIN wp_terms ON wp_term_relationships.term_taxonomy_id=wp_terms.term_id " +
+            "LEFT JOIN wp_yarpp_related_cache ON article1.ID=wp_yarpp_related_cache.reference_ID " +
+            "LEFT JOIN wp_posts AS article2 ON article2.ID=wp_yarpp_related_cache.ID " +
             "WHERE article1.post_status = 'publish' AND wp_terms.name IN (:keyWords) " +
             "GROUP BY article1.ID,article2.ID ORDER BY count desc";
 
@@ -165,13 +163,21 @@ public class ArticleDaoImpl implements ArticleDao {
             if (entry.containsKey("id")){
                 final Long main_id = (Long)entry.get("id");
                 if (result.containsKey(main_id)){
-                    final ArticleDTO relatedArticle = new ArticleDTO();
-                    relatedArticle.setId((Long)entry.get("re_id"));
-                    relatedArticle.setUrl((String)entry.get("re_url"));
-                    relatedArticle.setExcerpt((String)entry.get("re_excerpt"));
-                    relatedArticle.setTitle((String)entry.get("re_title"));
-                    relatedArticle.setContent((String)entry.get("re_content"));
-                    result.get(main_id).getRelatedArticles().add(relatedArticle);
+
+                    if (!Objects.isNull(entry.get("re_id"))
+                            && StringUtils.isNotEmpty((String)entry.get("re_url"))
+                            && StringUtils.isNotEmpty((String)entry.get("re_url"))
+                            && StringUtils.isNotEmpty((String)entry.get("re_title"))
+                            && StringUtils.isNotEmpty((String)entry.get("re_content"))){
+                        final ArticleDTO relatedArticle = new ArticleDTO();
+                        relatedArticle.setId((Long)entry.get("re_id"));
+                        relatedArticle.setUrl((String)entry.get("re_url"));
+                        relatedArticle.setExcerpt((String)entry.get("re_excerpt"));
+                        relatedArticle.setTitle((String)entry.get("re_title"));
+                        relatedArticle.setContent((String)entry.get("re_content"));
+                        result.get(main_id).getRelatedArticles().add(relatedArticle);
+                    }
+
                 }else{
                     final ArticleDTO mainArticle = new ArticleDTO();
 
@@ -182,13 +188,20 @@ public class ArticleDaoImpl implements ArticleDao {
                     mainArticle.setContent((String)entry.get("content"));
 
                     final List<ArticleDTO> relatedArticles = new ArrayList<>();
-                    final ArticleDTO relatedArticle = new ArticleDTO();
-                    relatedArticle.setId((Long)entry.get("re_id"));
-                    relatedArticle.setUrl((String)entry.get("re_url"));
-                    relatedArticle.setExcerpt((String)entry.get("re_excerpt"));
-                    relatedArticle.setTitle((String)entry.get("re_title"));
-                    relatedArticle.setContent((String)entry.get("re_content"));
-                    relatedArticles.add(relatedArticle);
+
+                    if (!Objects.isNull(entry.get("re_id"))
+                            && StringUtils.isNotEmpty((String)entry.get("re_url"))
+                            && StringUtils.isNotEmpty((String)entry.get("re_url"))
+                            && StringUtils.isNotEmpty((String)entry.get("re_title"))
+                            && StringUtils.isNotEmpty((String)entry.get("re_content"))){
+                        final ArticleDTO relatedArticle = new ArticleDTO();
+                        relatedArticle.setId((Long)entry.get("re_id"));
+                        relatedArticle.setUrl((String)entry.get("re_url"));
+                        relatedArticle.setExcerpt((String)entry.get("re_excerpt"));
+                        relatedArticle.setTitle((String)entry.get("re_title"));
+                        relatedArticle.setContent((String)entry.get("re_content"));
+                        relatedArticles.add(relatedArticle);
+                    }
 
                     mainArticle.setRelatedArticles(relatedArticles);
 

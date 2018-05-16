@@ -1,17 +1,17 @@
 package com.accenture.ai.controller.mock;
 
 import com.accenture.ai.dto.ArticleDTO;
+import com.accenture.ai.logging.LogAgent;
 import com.accenture.ai.utils.ArticleDTOMapper;
 import com.accenture.ai.utils.ArticleResultContex;
 import com.google.gson.Gson;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.stereotype.Controller;
-import org.springframework.util.CollectionUtils;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
-import org.springframework.jdbc.core.JdbcTemplate;
 
 import com.accenture.ai.service.aligenie.WebSocketServiceImpl;
 import com.accenture.ai.utils.SocketStatusContex;
@@ -22,6 +22,8 @@ import java.util.*;
 @Controller
 @RequestMapping("/test")
 public class TestController {
+
+    private static final LogAgent LOGGER = LogAgent.getLogAgent(TestController.class);
 	
 	@Autowired  
 	private SocketStatusContex socketStatusContex;
@@ -56,9 +58,9 @@ public class TestController {
                 "article1.post_excerpt as excerpt, count(article1.ID) as count, " +
                 "wp_terms.name as tag_name, article2.ID as re_id, article2.post_title as re_title, article2.post_content as re_content, article2.guid as re_url, article2.post_excerpt as re_excerpt " +
                 "FROM wp_posts AS article1 JOIN wp_term_relationships ON article1.ID=wp_term_relationships.object_id " +
-                "JOIN wp_terms ON wp_term_relationships.term_taxonomy_id=wp_terms.term_id " +
-                "JOIN wp_yarpp_related_cache ON article1.ID=wp_yarpp_related_cache.reference_ID " +
-                "JOIN wp_posts AS article2 ON article2.ID=wp_yarpp_related_cache.ID " +
+                "LEFT JOIN wp_terms ON wp_term_relationships.term_taxonomy_id=wp_terms.term_id " +
+                "LEFT JOIN wp_yarpp_related_cache ON article1.ID=wp_yarpp_related_cache.reference_ID " +
+                "LEFT JOIN wp_posts AS article2 ON article2.ID=wp_yarpp_related_cache.ID " +
                 "WHERE article1.post_status = 'publish' AND wp_terms.name IN (:keyWords) " +
                 "GROUP BY article1.ID,article2.ID ORDER BY count desc";
         Map<String, Object> paramMap = new HashMap<String, Object>();
@@ -87,11 +89,13 @@ public class TestController {
 
         String sql = "SELECT article1.ID as id, article1.post_title as title, article1.post_content as content, article1.guid as url, article1.post_excerpt as excerpt, " +
                 "article2.ID as re_id, article2.post_title as re_title, article2.post_content as re_content, article2.guid as re_url, article2.post_excerpt as re_excerpt " +
-                "FROM wp_posts AS article1 JOIN wp_yarpp_related_cache ON article1.ID=wp_yarpp_related_cache.reference_ID " +
-                "JOIN wp_posts AS article2 ON article2.ID=wp_yarpp_related_cache.ID WHERE article1.post_status = 'publish' AND article1.post_title = :questions";
+                "FROM wp_posts AS article1 LEFT JOIN wp_yarpp_related_cache ON article1.ID=wp_yarpp_related_cache.reference_ID " +
+                "LEFT JOIN wp_posts AS article2 ON article2.ID=wp_yarpp_related_cache.ID WHERE article1.post_status = 'publish' AND article1.post_title = :questions";
         Map<String, Object> paramMap = new HashMap<String, Object>();
 
-        paramMap.put("questions","公司附近哪里停车便宜");
+        paramMap.put("questions","项目目前进度怎么样");
+
+        LOGGER.info("sql:" + sql + " param:" + paramMap);
 
         List<Map<String,Object>> articleMap = namedParameterJdbcTemplate.query(sql,paramMap,new ArticleDTOMapper());
 
@@ -104,7 +108,7 @@ public class TestController {
 
         String result = (new Gson()).toJson(list);
 
-        return result;
+        return "query result:"+(new Gson()).toJson(articleMap) + ", populate result:" + result;
     }
 
     /**
@@ -121,13 +125,21 @@ public class TestController {
             if (entry.containsKey("id")){
                 final Long main_id = (Long)entry.get("id");
                 if (result.containsKey(main_id)){
-                    final ArticleDTO relatedArticle = new ArticleDTO();
-                    relatedArticle.setId((Long)entry.get("re_id"));
-                    relatedArticle.setUrl((String)entry.get("re_url"));
-                    relatedArticle.setExcerpt((String)entry.get("re_excerpt"));
-                    relatedArticle.setTitle((String)entry.get("re_title"));
-                    relatedArticle.setContent((String)entry.get("re_content"));
-                    result.get(main_id).getRelatedArticles().add(relatedArticle);
+
+                    if (!Objects.isNull(entry.get("re_id"))
+                            && StringUtils.isNotEmpty((String)entry.get("re_url"))
+                            && StringUtils.isNotEmpty((String)entry.get("re_url"))
+                            && StringUtils.isNotEmpty((String)entry.get("re_title"))
+                            && StringUtils.isNotEmpty((String)entry.get("re_content"))){
+                        final ArticleDTO relatedArticle = new ArticleDTO();
+                        relatedArticle.setId((Long)entry.get("re_id"));
+                        relatedArticle.setUrl((String)entry.get("re_url"));
+                        relatedArticle.setExcerpt((String)entry.get("re_excerpt"));
+                        relatedArticle.setTitle((String)entry.get("re_title"));
+                        relatedArticle.setContent((String)entry.get("re_content"));
+                        result.get(main_id).getRelatedArticles().add(relatedArticle);
+                    }
+
                 }else{
                     final ArticleDTO mainArticle = new ArticleDTO();
 
@@ -138,13 +150,20 @@ public class TestController {
                     mainArticle.setContent((String)entry.get("content"));
 
                     final List<ArticleDTO> relatedArticles = new ArrayList<>();
-                    final ArticleDTO relatedArticle = new ArticleDTO();
-                    relatedArticle.setId((Long)entry.get("re_id"));
-                    relatedArticle.setUrl((String)entry.get("re_url"));
-                    relatedArticle.setExcerpt((String)entry.get("re_excerpt"));
-                    relatedArticle.setTitle((String)entry.get("re_title"));
-                    relatedArticle.setContent((String)entry.get("re_content"));
-                    relatedArticles.add(relatedArticle);
+
+                    if (!Objects.isNull(entry.get("re_id"))
+                            && StringUtils.isNotEmpty((String)entry.get("re_url"))
+                            && StringUtils.isNotEmpty((String)entry.get("re_url"))
+                            && StringUtils.isNotEmpty((String)entry.get("re_title"))
+                            && StringUtils.isNotEmpty((String)entry.get("re_content"))){
+                        final ArticleDTO relatedArticle = new ArticleDTO();
+                        relatedArticle.setId((Long)entry.get("re_id"));
+                        relatedArticle.setUrl((String)entry.get("re_url"));
+                        relatedArticle.setExcerpt((String)entry.get("re_excerpt"));
+                        relatedArticle.setTitle((String)entry.get("re_title"));
+                        relatedArticle.setContent((String)entry.get("re_content"));
+                        relatedArticles.add(relatedArticle);
+                    }
 
                     mainArticle.setRelatedArticles(relatedArticles);
 

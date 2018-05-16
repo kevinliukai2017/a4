@@ -1,6 +1,8 @@
 package com.accenture.ai.utils;
 
 import com.accenture.ai.dto.ArticleDTO;
+import com.accenture.ai.logging.LogAgent;
+import com.google.gson.Gson;
 import org.springframework.jdbc.core.RowMapper;
 
 import java.sql.ResultSet;
@@ -9,6 +11,8 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class ArticleDTOMapper implements RowMapper<Map<String,Object>> {
+
+    private static final LogAgent LOGGER = LogAgent.getLogAgent(ArticleDTOMapper.class);
 
     @Override
     public Map<String,Object> mapRow(ResultSet resultSet, int i) throws SQLException {

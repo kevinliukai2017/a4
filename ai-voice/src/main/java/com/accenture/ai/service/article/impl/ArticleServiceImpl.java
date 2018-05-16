@@ -15,6 +15,7 @@ import org.springframework.stereotype.Service;
 
 
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 @Service
@@ -56,6 +57,10 @@ public class ArticleServiceImpl implements ArticleService{
         for(ArticleDTO articleDTO : articles){
 
             if (CollectionUtils.isNotEmpty(articleDTO.getRelatedArticles())){
+
+                //resort the related article
+                Collections.sort(articleDTO.getRelatedArticles(), new RelateArticleComparator());
+
                 final StringBuilder stringBuilder = new StringBuilder();
                 stringBuilder.append(" 您是否对以下内容感兴趣");
                 for(ArticleDTO reArticleDTO : articleDTO.getRelatedArticles()){
@@ -180,6 +185,20 @@ public class ArticleServiceImpl implements ArticleService{
         LOGGER.error("Can not return back the pages by the content, because the parameter content is empty");
 
         return Collections.emptyList();
+    }
+
+    /**
+     * Comparator to re sort the conditions
+     *
+     */
+    static class RelateArticleComparator implements Comparator
+    {
+        @Override
+        public int compare(final Object object1, final Object object2)
+        {
+            return new Double(((ArticleDTO) object1).getId())
+                    .compareTo(new Double(((ArticleDTO) object2).getId()));
+        }
     }
 
 }
