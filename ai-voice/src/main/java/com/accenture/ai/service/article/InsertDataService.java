@@ -20,4 +20,6 @@ public interface InsertDataService {
 
     String insertReferenceArticle(Map<String,String> article);
 
+    String insertCategory(String category);
+
 }
