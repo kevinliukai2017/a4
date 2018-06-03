@@ -85,7 +85,7 @@ public class InsertDataServiceImpl implements InsertDataService {
             Connection con = DriverManager.getConnection("jdbc:mysql://rm-bp1ymf161p7o36y2lto.mysql.rds.aliyuncs.com:3306/transa4?characterEncoding=utf8&useSSL=false", "transa4", "aiTP2018(]");
             // for article id and title and content
 
-            String articleSql = "insert into wp_posts(NO,post_title,post_content) values(?,?,?)";
+            String articleSql = "insert into wp_posts(NO,post_title,post_content,post_name) values(?,?,?,?)";
 
             PreparedStatement sta = con.prepareStatement(articleSql);
 
@@ -96,6 +96,7 @@ public class InsertDataServiceImpl implements InsertDataService {
             sta.setString(2, article.get("Title"));
 
             sta.setString(3, article.get("Content"));
+            sta.setString(4,article.get("Category"));
             int rows = sta.executeUpdate();
             if ( rows > 0) {
 
