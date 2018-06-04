@@ -77,6 +77,50 @@ public class InsertDataServiceImpl implements InsertDataService {
     }
 
     @Override
+    public String insertCategory(String category) {
+        List<String> categorys = new ArrayList<>();
+        categorys.add(category);
+        try {
+            Class.forName("com.mysql.jdbc.Driver");
+
+            Connection con = DriverManager.getConnection("jdbc:mysql://rm-bp1ymf161p7o36y2lto.mysql.rds.aliyuncs.com:3306/transa4?characterEncoding=utf8&useSSL=false", "transa4", "aiTP2018(]");
+            //for tag tabel
+            String tagSql = "insert into wp_terms(name) values(?)";
+            PreparedStatement staTag = con.prepareStatement(tagSql);
+            staTag.setString(1, category);
+            int rows = staTag.executeUpdate();
+
+            //for tag reference
+            String tagrReference = "insert into wp_term_taxonomy(term_taxonomy_id,term_id,taxonomy) values(?,?,?)";
+
+            PreparedStatement staTagRe = con.prepareStatement(tagrReference);
+            staTagRe.setString(1,articleDao.getTagByName(categorys).get(0));
+            staTagRe.setString(2,articleDao.getTagByName(categorys).get(0));
+            staTagRe.setString(3,"category");
+
+            int ReferenceRows = staTagRe.executeUpdate();
+            if(ReferenceRows >0) {
+                LOGGER.info("regerenceTag operate successfully");
+            }
+            if (rows > 0 ) {
+
+                LOGGER.info("operate successfully!");
+
+            }
+
+            staTag.close();
+            // staTagRe.close();
+            con.close();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+
+        }
+
+        return null;
+    }
+
+    @Override
     public String insertArticleData(Map<String, String> article) {
         if (this.isTagExsit(article)) {
         try {
@@ -85,7 +129,7 @@ public class InsertDataServiceImpl implements InsertDataService {
             Connection con = DriverManager.getConnection("jdbc:mysql://rm-bp1ymf161p7o36y2lto.mysql.rds.aliyuncs.com:3306/transa4?characterEncoding=utf8&useSSL=false", "transa4", "aiTP2018(]");
             // for article id and title and content
 
-            String articleSql = "insert into wp_posts(NO,post_title,post_content) values(?,?,?)";
+            String articleSql = "insert into wp_posts(NO,post_title,post_content,post_name) values(?,?,?,?)";
 
             PreparedStatement sta = con.prepareStatement(articleSql);
 
@@ -96,6 +140,7 @@ public class InsertDataServiceImpl implements InsertDataService {
             sta.setString(2, article.get("Title"));
 
             sta.setString(3, article.get("Content"));
+            sta.setString(4,article.get("Category"));
             int rows = sta.executeUpdate();
             if ( rows > 0) {
 
@@ -119,6 +164,10 @@ public class InsertDataServiceImpl implements InsertDataService {
             }
             //for article tag
             List<String> TagIds = this.getArticleDao().getTagByName(Arrays.asList(article.get("Tag").split(",")));
+
+            //for article category
+            List<String> categoryIds = this.getArticleDao().getTagByName(Arrays.asList(article.get("Category").split(",")));
+            TagIds.addAll(categoryIds);
             for(String tagId : TagIds) {
                 String tag = "insert into wp_term_relationships(object_id,term_taxonomy_id) values(?,?)";
                 PreparedStatement staTag = con.prepareStatement(tag);
@@ -134,7 +183,7 @@ public class InsertDataServiceImpl implements InsertDataService {
 
                 if ( TagRows > 0) {
 
-                    LOGGER.info("Tag import operate successfully!");
+                    LOGGER.info("Tag and category import operate successfully!");
 
                 }
 
@@ -191,9 +240,16 @@ public class InsertDataServiceImpl implements InsertDataService {
     public boolean isTagExsit(Map<String,String> article){
         List<String> tags= this.getArticleDao().getAllTag();
         List<String> existTags = Arrays.asList(article.get("Tag").split(","));
+        //get category name
+        List<String> existCategorys = Arrays.asList(article.get("Category").split(","));
         for (String tag : existTags) {
             if (!tags.contains(tag)) {
                 this.insertTagData(tag);
+            }
+        }
+        for (String category : existCategorys){
+            if (!tags.contains(category)){
+                    this.insertCategory(category);
             }
         }
         return true;
