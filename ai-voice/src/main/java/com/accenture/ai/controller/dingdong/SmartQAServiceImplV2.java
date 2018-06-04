@@ -27,6 +27,11 @@ public class SmartQAServiceImplV2{
 
 	private static final LogAgent LOGGER = LogAgent.getLogAgent(SmartQAServiceImplV2.class);
 
+	private static final String NO_PLEASE_REPLY_MESSAGE = "你是否有新的问题需要询问我？如果是的话请加上请问哦";
+	private static final String NO_PLEASE_REPLY_END_MESSAGE = "您问的问题不包含请问，服务已断开，谢谢";
+	private static final String REQUEST_PARAMS_ERROR = "请求数据错误，请联系管理员，谢谢";
+	private int noPleaseCount = 0;
+
 	@Autowired
 	ArticleService articleService;
     
@@ -45,7 +50,7 @@ public class SmartQAServiceImplV2{
 
 		if(MapUtils.isEmpty(paramMap)){
 			LOGGER.info("The paramMap(slots) is null, will return empty content----------check the reqeust");
-            buildEmptyDingdongInfo(result,taskQuery);
+			buildspecialDingdongInfo(result,taskQuery,REQUEST_PARAMS_ERROR,false);
 			return result;
 		}
 		LOGGER.info("paramMap ：" + paramMap.toString());
@@ -53,22 +58,38 @@ public class SmartQAServiceImplV2{
         String any = null;
 		if ("other_any".equals(paramMap.get("type"))){
 		    if (paramMap.get("value").startsWith("请问")){
+				noPleaseCount =0;
                 any = paramMap.get("value").replaceFirst("请问","");
             }else{
                 LOGGER.info("The request is not first request and is not start with 请问, will return empty content----------check the reqeust");
-                buildEmptyDingdongInfo(result,taskQuery);
+
+				noPleaseCount++;
+
+				if (noPleaseCount >= 2)
+				{
+					buildspecialDingdongInfo(result,taskQuery,NO_PLEASE_REPLY_END_MESSAGE,true);
+				}
+				else {
+					buildspecialDingdongInfo(result,taskQuery,NO_PLEASE_REPLY_MESSAGE,false);
+				}
+
                 return result;
             }
         }
         else if ("first_any".equals(paramMap.get("type"))){
+			noPleaseCount = 0;
             any = paramMap.get("value");
         }else if ("any".equals(paramMap.get("type"))){
+			noPleaseCount = 0;
             if (paramMap.get("value").startsWith("请问")){
                 any = paramMap.get("value").replaceFirst("请问","");
             }else{
                 any = paramMap.get("value");
             }
-        }
+        }else{
+			noPleaseCount = 0;
+		}
+		
         String sequence = "sequence".equals(paramMap.get("type")) ? paramMap.get("value") : null  ;
         String back = "back".equals(paramMap.get("type")) ? paramMap.get("value") : null ;
 
@@ -108,7 +129,7 @@ public class SmartQAServiceImplV2{
 		Map<String, String> extend = new HashMap<>();
 		extend.put("NO_REC", "0");
 		result.setExtend(extend);
-		
+
 		if (StringUtils.isEmpty(any) && StringUtils.isEmpty(sequence) && StringUtils.isEmpty(back)) {
 			
 			buildDingdongInfo(result,"请告诉我你要干嘛，比如 叮咚叮咚 让小哲同学告诉我 如何填写时间成本");
@@ -250,9 +271,9 @@ public class SmartQAServiceImplV2{
 		result.setDirective(directive);
 	}
 
-	private void buildEmptyDingdongInfo(TaskResult result,TaskQuery taskQuery){
+	private void buildspecialDingdongInfo(TaskResult result,TaskQuery taskQuery,String replyMessage,boolean isEnd){
         result.setVersionid(taskQuery.getVersionid());
-        result.setIsEnd(false);
+        result.setIsEnd(isEnd);
         result.setSequence(taskQuery.getSequence());
         result.setTimestamp(System.currentTimeMillis());
         Map<String, String> extend = new HashMap<>();
@@ -262,7 +283,7 @@ public class SmartQAServiceImplV2{
         Directive directive = new Directive();
         DirectiveItem directiveItem = new DirectiveItem();
         directiveItem.setType("1");
-        directiveItem.setContent("");
+        directiveItem.setContent(replyMessage);
         DirectiveItem[] directiveItems = {directiveItem};
         directive.setDirectiveItems(directiveItems);
         result.setDirective(directive);
