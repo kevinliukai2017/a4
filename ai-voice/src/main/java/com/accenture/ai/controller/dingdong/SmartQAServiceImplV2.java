@@ -65,7 +65,7 @@ public class SmartQAServiceImplV2{
 
 				noPleaseCount++;
 
-				if (noPleaseCount >= 2)
+				if (noPleaseCount >= 3)
 				{
 					buildspecialDingdongInfo(result,taskQuery,NO_PLEASE_REPLY_END_MESSAGE,true);
 				}

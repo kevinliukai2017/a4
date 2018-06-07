@@ -24,6 +24,7 @@ import java.util.*;
 public class TestController {
 
     private static final LogAgent LOGGER = LogAgent.getLogAgent(TestController.class);
+    private static final String ARTICLE_DETAIL_URL = "/websocket/articleDetailFrame";
 	
 	@Autowired  
 	private SocketStatusContex socketStatusContex;
@@ -66,8 +67,8 @@ public class TestController {
         Map<String, Object> paramMap = new HashMap<String, Object>();
 
         final List<String> keyWords = new ArrayList<>();
-        keyWords.add("交通");
-        keyWords.add("停车");
+        keyWords.add("公司项目");
+        keyWords.add("立白");
         paramMap.put("keyWords",keyWords);
 
         List<Map<String,Object>> articleMap = namedParameterJdbcTemplate.query(sql,paramMap,new ArticleDTOMapper());
@@ -102,7 +103,7 @@ public class TestController {
         final List<ArticleDTO> list = populateArticles(articleMap);
 
         articleResultContex.setArticles(Arrays.asList(list.get(0)));
-        socketStatusContex.setTitleAndUrl("文章列表", list.get(0).getUrl());
+        socketStatusContex.setTitleAndUrl("文章列表", ARTICLE_DETAIL_URL);
         //send contex to customer client
         webSocketServiceImpl.sendContexToClient();
 

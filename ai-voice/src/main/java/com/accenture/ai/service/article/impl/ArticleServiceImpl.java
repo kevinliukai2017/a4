@@ -14,7 +14,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
@@ -23,6 +22,8 @@ import java.util.List;
 public class ArticleServiceImpl implements ArticleService{
 
     private static final LogAgent LOGGER = LogAgent.getLogAgent(ArticleServiceImpl.class);
+
+    private static final String ARTICLE_DETAIL_URL = "/websocket/articleDetailFrame";
 
     @Autowired
     private ArticleDao articleDao;
@@ -110,7 +111,7 @@ public class ArticleServiceImpl implements ArticleService{
         if (articleDTOs.size() == 1) {
             LOGGER.info("查询到的文章，title：" + articleDTOs.get(0).getTitle() + "  url:"+articleDTOs.get(0).getUrl());
             articleResultContex.setArticles(articleDTOs);
-            socketStatusContex.setTitleAndUrl(questions, articleDTOs.get(0).getUrl());
+            socketStatusContex.setTitleAndUrl(questions, ARTICLE_DETAIL_URL);
             //send contex to customer client
             webSocketServiceImpl.sendContexToClient();
 

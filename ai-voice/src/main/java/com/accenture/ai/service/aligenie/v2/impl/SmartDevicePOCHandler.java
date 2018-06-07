@@ -29,6 +29,7 @@ import com.alibaba.da.coin.ide.spi.standard.TaskResult;
 public class SmartDevicePOCHandler implements AligenieHandler {
 
 	private static final LogAgent LOGGER = LogAgent.getLogAgent(SmartDevicePOCHandler.class);
+	private static final String ARTICLE_DETAIL_URL = "/websocket/articleDetailFrame";
 
 	@Autowired
 	SocketStatusContex socketStatusContex;
@@ -133,7 +134,7 @@ public class SmartDevicePOCHandler implements AligenieHandler {
 		} else if (articleDTOs.size() == 1) {
             LOGGER.info("查询到的文章，title：" + articleDTOs.get(0).getTitle() + "  url:"+articleDTOs.get(0).getUrl());
             articleResultContex.setArticles(articleDTOs);
-            socketStatusContex.setTitleAndUrl(any, articleDTOs.get(0).getUrl());
+            socketStatusContex.setTitleAndUrl(any, ARTICLE_DETAIL_URL);
             //send contex to customer client
             webSocketServiceImpl.sendContexToClient();
 			result.setReply(articleDTOs.get(0).getContent());
@@ -185,7 +186,7 @@ public class SmartDevicePOCHandler implements AligenieHandler {
 
 			if (articleDetail != null){
                 articleResultContex.setArticles(Arrays.asList(articleDetail));
-                socketStatusContex.setTitleAndUrl(any, articleDetail.getUrl());
+                socketStatusContex.setTitleAndUrl(any, ARTICLE_DETAIL_URL);
                 //send contex to customer client
                 webSocketServiceImpl.sendContexToClient();
 
