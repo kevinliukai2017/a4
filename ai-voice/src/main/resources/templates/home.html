@@ -34,7 +34,7 @@
 			//消息
 			server : {
 				title : '欢迎光临信息系统',
-				url : '/websocket/defaultFrame',
+				url : '/websocket/categoryListFrame',
 			}
 		};
 
@@ -117,6 +117,8 @@
     window.onresize = function(){
 		changeFrameHeight();
 	}
+
+    window.setInterval("changeFrameHeight()", 200);
 
     /*]]>*/
 </script>

@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.w3.org/1999/xhtml">
+<head>
+	<style type="text/css">
+		body {background-image:url(/images/moon.jpg);background-repeat:no-repeat; background-size:100% 150%;-moz-background-size:100% 100%;}
+	</style>
+</head>
+<body>
+	<div style="margin-left: 100px;margin-right: 30px; width: 90%">
+
+		<div style="float:right;padding-top: 20px;"><img src="/03.png" /></div>
+		<div style="padding-top: 50px; color:white; float:left;font-size:35px">
+			<strong style="">欢迎使用智能语音助手.</strong>
+			<br>
+			<strong style="">本助手将为您提供以下范围的问题解答，请问您的问题是？</strong>
+		</div>
+
+		<div style="padding-top: 150px;">
+			<ul style="width:27%; font-size:23px; color:white; float:left;" th:each="category,categoryStat: ${categories}" th:if="${categoryStat.index le 2}">
+				<li style="font-size:35px;" th:text="${category.name}"></li>
+				<li th:each="article,articleStat: ${category.articles}" th:text="${article.title}"></li>
+			</ul>
+		</div>
+	</div>
+</body>
+</html>

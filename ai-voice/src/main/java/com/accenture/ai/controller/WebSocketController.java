@@ -86,6 +86,12 @@ public class WebSocketController {
         return "articleListFrame";
     }
 
+    @GetMapping("/websocket/categoryListFrame")
+    public String categoryListFrame(Map<String,Object> model) {
+        model.put("categories",articleResultContex.getCategories());
+        return "categoryListFrame";
+    }
+
     //该方法是客户端请求服务器时，服务器的处理请求的方法
     @MessageMapping("/send")
     @SendTo("/topic/send")

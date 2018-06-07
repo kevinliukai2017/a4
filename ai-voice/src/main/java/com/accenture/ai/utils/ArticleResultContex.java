@@ -1,8 +1,11 @@
 package com.accenture.ai.utils;
 
 import com.accenture.ai.dto.ArticleDTO;
+import com.accenture.ai.dto.CategoryDTO;
 import com.accenture.ai.logging.LogAgent;
+import com.accenture.ai.service.article.ArticleService;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.CollectionUtils;
 
 import java.util.Collections;
@@ -13,7 +16,12 @@ import java.util.Map;
 public class ArticleResultContex {
     private static final LogAgent LOGGER = LogAgent.getLogAgent(ArticleResultContex.class);
 
+    @Autowired
+    ArticleService articleService;
+
     private List<ArticleDTO> articles;
+
+    private List<CategoryDTO> categories;
 
     private Map<String,List<ArticleDTO>> recordArticles;
 
@@ -48,5 +56,18 @@ public class ArticleResultContex {
 
     public List<ArticleDTO> getArticlesFromRecords(String content){
         return getRecordArticles().containsKey(content) ? getRecordArticles().get(content) : Collections.emptyList();
+    }
+
+    public List<CategoryDTO> getCategories() {
+
+        if (CollectionUtils.isEmpty(categories)){
+            LOGGER.error("Go to get the all categories");
+            categories = articleService.getAllCategories();
+        }
+        return categories;
+    }
+
+    public void setCategories(List<CategoryDTO> categories) {
+        this.categories = categories;
     }
 }

@@ -1,6 +1,7 @@
 package com.accenture.ai.service.article;
 
 import com.accenture.ai.dto.ArticleDTO;
+import com.accenture.ai.dto.CategoryDTO;
 
 import java.util.List;
 
@@ -48,4 +49,13 @@ public interface ArticleService {
      * @return
      */
     List<ArticleDTO> getAndSendArticlesFromContext(String content);
+
+
+    /**
+     * get all the category, will search all the category from the database.
+     *
+     * @return List<CategoryDTO>
+     *  the categories
+     */
+    List<CategoryDTO> getAllCategories();
 }

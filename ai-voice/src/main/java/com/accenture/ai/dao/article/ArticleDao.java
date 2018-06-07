@@ -1,6 +1,7 @@
 package com.accenture.ai.dao.article;
 
 import com.accenture.ai.dto.ArticleDTO;
+import com.accenture.ai.dto.CategoryDTO;
 
 import java.util.List;
 
@@ -23,4 +24,12 @@ public interface ArticleDao {
     List<String> getTagByName(List<String> name);
 
     List<Integer> getArticleIdByNo(String No);
+
+    /**
+     * get all the category, will search all the category from the database.
+     *
+     * @return List<CategoryDTO>
+     *  the categories
+     */
+    List<CategoryDTO> getAllCategories();
 }

@@ -2,6 +2,7 @@ package com.accenture.ai.service.article.impl;
 
 import com.accenture.ai.dao.article.ArticleDao;
 import com.accenture.ai.dto.ArticleDTO;
+import com.accenture.ai.dto.CategoryDTO;
 import com.accenture.ai.logging.LogAgent;
 import com.accenture.ai.service.aligenie.WebSocketServiceImpl;
 import com.accenture.ai.service.article.ArticleService;
@@ -187,6 +188,15 @@ public class ArticleServiceImpl implements ArticleService{
         return Collections.emptyList();
     }
 
+    @Override
+    public List<CategoryDTO> getAllCategories() {
+
+        final List<CategoryDTO> result = articleDao.getAllCategories();
+        //resort the related article
+        Collections.sort(result, new CategoryArticlesComparator());
+        return result;
+    }
+
     /**
      * Comparator to re sort the conditions
      *
@@ -198,6 +208,20 @@ public class ArticleServiceImpl implements ArticleService{
         {
             return new Double(((ArticleDTO) object1).getId())
                     .compareTo(new Double(((ArticleDTO) object2).getId()));
+        }
+    }
+
+    /**
+     * Comparator to re sort the conditions
+     *
+     */
+    static class CategoryArticlesComparator implements Comparator
+    {
+        @Override
+        public int compare(final Object object1, final Object object2)
+        {
+            return -new Double(((CategoryDTO) object1).getArticles().size())
+                    .compareTo(new Double(((CategoryDTO) object2).getArticles().size()));
         }
     }
 

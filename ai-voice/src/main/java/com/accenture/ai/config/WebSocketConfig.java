@@ -33,7 +33,8 @@ public class WebSocketConfig extends AbstractWebSocketMessageBrokerConfigurer {
     		if(socketStatusContex == null) {
     			socketStatusContex = new SocketStatusContex();
     			socketStatusContex.setTitle("欢迎光临门户信息系统");
-    			socketStatusContex.setUrl("/websocket/defaultFrame");
+    			//socketStatusContex.setUrl("/websocket/defaultFrame");
+                socketStatusContex.setUrl("/websocket/categoryListFrame");
     		}
     		
 		return socketStatusContex;
