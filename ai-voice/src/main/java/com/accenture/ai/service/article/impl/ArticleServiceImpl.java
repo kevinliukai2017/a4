@@ -155,9 +155,9 @@ public class ArticleServiceImpl implements ArticleService{
             result = "抱歉没有找到你想要的内容";
         } else if (articleDTOs.size() == 1) {
             if (StringUtils.isNotEmpty(articleDTOs.get(0).getExcerpt())){
-                result =  articleDTOs.get(0).getExcerpt();
+                result =  articleDTOs.get(0).getTitle() + articleDTOs.get(0).getExcerpt();
             }else{
-                result = articleDTOs.get(0).getContent();
+                result = articleDTOs.get(0).getTitle() + articleDTOs.get(0).getContent();
             }
         } else {
             for (ArticleDTO articleDTO : articleDTOs) {

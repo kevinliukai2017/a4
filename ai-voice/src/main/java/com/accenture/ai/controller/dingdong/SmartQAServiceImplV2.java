@@ -243,7 +243,7 @@ public class SmartQAServiceImplV2{
 
 			if (articleDetail != null){
                 articleService.recordAndSendArticles(any,Arrays.asList(articleDetail));
-			    return StringUtils.isNotEmpty(articleDetail.getExcerpt()) ? articleDetail.getExcerpt() : articleDetail.getContent();
+			    return StringUtils.isNotEmpty(articleDetail.getExcerpt()) ? articleDetail.getExcerpt() : articleDetail.getTitle()+articleDetail.getContent();
             }
             else{
                 LOGGER.info("can not get detail answer by title:" + title);
