@@ -70,9 +70,11 @@ public class ArticleServiceImpl implements ArticleService{
                 }
 
                 if (StringUtils.isNotEmpty(articleDTO.getExcerpt())){
-                    articleDTO.setExcerpt(articleDTO.getExcerpt() + stringBuilder.toString());
-                }else{
-                    articleDTO.setReadContent(articleDTO.getContent() + stringBuilder.toString());
+                    articleDTO.setReadExcerpt(articleDTO.getTitle() + " " + articleDTO.getExcerpt() + stringBuilder.toString());
+                }
+
+                if (StringUtils.isNotEmpty(articleDTO.getContent())){
+                    articleDTO.setReadContent(articleDTO.getTitle() + " " + articleDTO.getContent() + stringBuilder.toString());
                 }
             }
 
@@ -152,10 +154,10 @@ public class ArticleServiceImpl implements ArticleService{
     public String buildReplyResult(List<ArticleDTO> articleDTOs) {
         String result = "";
         if (CollectionUtils.isEmpty(articleDTOs)) {
-            result = "抱歉没有找到你想要的内容";
+            result = "抱歉没有找到您想要的内容";
         } else if (articleDTOs.size() == 1) {
-            if (StringUtils.isNotEmpty(articleDTOs.get(0).getExcerpt())){
-                result =  articleDTOs.get(0).getExcerpt();
+            if (StringUtils.isNotEmpty(articleDTOs.get(0).getReadExcerpt())){
+                result =  articleDTOs.get(0).getReadExcerpt();
             }else{
                 result = articleDTOs.get(0).getReadContent();
             }
