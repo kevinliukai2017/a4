@@ -1,127 +1,135 @@
 <!DOCTYPE html>
 <html>
 <head>
-<title>门户信息平台</title>
-<script src="//cdn.bootcss.com/angular.js/1.5.6/angular.min.js"></script>
-<script src="https://cdn.bootcss.com/sockjs-client/1.1.4/sockjs.min.js"></script>
-<script src="https://cdn.bootcss.com/stomp.js/2.3.3/stomp.min.js"></script>
-<script type="text/javascript">
-	/*<![CDATA[*/
+	<title>门户信息平台</title>
+	<style type="text/css">
+		body {background-image:url(/04.jpg);background-repeat:no-repeat; background-size:100% 100%;-moz-background-size:100% 100%;}
+	</style>
+	<script src="//cdn.bootcss.com/angular.js/1.5.6/angular.min.js"></script>
+	<script src="https://cdn.bootcss.com/sockjs-client/1.1.4/sockjs.min.js"></script>
+	<script src="https://cdn.bootcss.com/stomp.js/2.3.3/stomp.min.js"></script>
+	<script type="text/javascript">
+		/*<![CDATA[*/
 
-	var stompClient = null;
-	var socket = null;
+		var stompClient = null;
+		var socket = null;
 
-	var websocket = angular.module('websocket', []);
-    websocket.config(function($sceDelegateProvider) {
-        $sceDelegateProvider.resourceUrlWhitelist([
-            // Allow same origin resource loads.
-            'self',
-            'http://maxyt.store/:9191/**',
-            'http://106.14.124.254:9191/**',
-            'https://maxyt.store/:9192/**',
-            'https://106.14.124.254:9192/**',
-            // Allow loading from our assets domain.  Notice the difference between * and **.
-            'http://106.14.124.254:8080/**'
+		var websocket = angular.module('websocket', []);
+		websocket.config(function($sceDelegateProvider) {
+			$sceDelegateProvider.resourceUrlWhitelist([
+				// Allow same origin resource loads.
+				'self',
+				'http://maxyt.store/:9191/**',
+				'http://106.14.124.254:9191/**',
+				'https://maxyt.store/:9192/**',
+				'https://106.14.124.254:9192/**',
+				// Allow loading from our assets domain.  Notice the difference between * and **.
+				'http://106.14.124.254:8080/**'
 
-        ]);
-    });
+			]);
+		});
 
-	websocket.controller('MainController', function($rootScope, $scope, $http) {
+		websocket.controller('MainController', function($rootScope, $scope, $http) {
 
-		$scope.data = {
-			//连接状态
-			status : 0,
-			//消息
-			server : {
-				title : '欢迎光临信息系统',
-				url : '/websocket/categoryListFrame',
-			}
-		};
+			$scope.data = {
+				//连接状态
+				status : 0,
+				//消息
+				server : {
+					title : '欢迎光临信息系统',
+					url : '/websocket/categoryListFrame',
+				}
+			};
 
-		//连接
-		$scope.connect = function() {
-			socket = new SockJS('/my-websocket');
-			stompClient = Stomp.over(socket);
-			stompClient.connect({}, function(frame) {
-				// 注册发送消息
-				stompClient.subscribe('/topic/send', function(msg) {
-					console.log("/topic/send, response" + msg.body);
+			//连接
+			$scope.connect = function() {
+				socket = new SockJS('/my-websocket');
+				stompClient = Stomp.over(socket);
+				stompClient.connect({}, function(frame) {
+					// 注册发送消息
+					stompClient.subscribe('/topic/send', function(msg) {
+						console.log("/topic/send, response" + msg.body);
+						$scope.data.status = 1;
+						$scope.$apply();
+					});
+
+					// 注册推送时间回调
+					stompClient.subscribe('/topic/callback', function(msg) {
+						console.log("/topic/callback, response" + msg.body);
+						$scope.handleServerStatus(msg);
+						$scope.data.status = 1;
+						$scope.$apply();
+					});
+
 					$scope.data.status = 1;
 					$scope.$apply();
 				});
-				
-				// 注册推送时间回调
-				stompClient.subscribe('/topic/callback', function(msg) {
-					console.log("/topic/callback, response" + msg.body);
-					$scope.handleServerStatus(msg);
-					$scope.data.status = 1;
-					$scope.$apply();
-				});
+			};
 
-				$scope.data.status = 1;
-				$scope.$apply();
-			});
-		};
-		
-		$scope.handleServerStatus = function(msg) {
-			var formatedMsg = JSON.parse(msg.body);
-			if (formatedMsg.url != '') {
+			$scope.handleServerStatus = function(msg) {
+				var formatedMsg = JSON.parse(msg.body);
+				if (formatedMsg.url != '') {
 
-			    if(formatedMsg.url == $scope.data.server.url){
-                    document.getElementById('mainiframe').contentWindow.location.reload(true);
+					if(formatedMsg.url == $scope.data.server.url){
+						document.getElementById('mainiframe').contentWindow.location.reload(true);
+					}
+					else{
+						$scope.data.server.url = formatedMsg.url;
+						$scope.data.server.title = formatedMsg.title;
+						$scope.$apply();
+					}
+					//changeFrameHeight();
 				}
-				else{
-                    $scope.data.server.url = formatedMsg.url;
-                    $scope.data.server.title = formatedMsg.title;
-                    $scope.$apply();
+			}
+
+			$scope.disconnect = function() {
+				if (stompClient != null) {
+					stompClient.disconnect();
 				}
-                changeFrameHeight();
+				$scope.data.status = 2;
 			}
+
+			$scope.send = function() {
+				stompClient.send("/websocket/send", {}, JSON.stringify({
+					'message' : $scope.data.message
+				}));
+			}
+
+
+
+			setTimeout(function(){
+				$scope.connect();
+				if(socket != null){
+					socket.onclose = function()
+					{
+					   // 关闭 websocket
+							console.log("=======closed=======");
+							$scope.data.status = 2;
+							$scope.$apply();
+					};
+				}
+			}, 0);
+
+		});
+
+		function changeFrameHeight(){
+			var ifm= document.getElementById("mainiframe");
+			if(document.documentElement.clientHeight < 414){
+                ifm.height = 414;
+			}else{
+                ifm.height=document.documentElement.clientHeight;
+			}
+
 		}
 
-		$scope.disconnect = function() {
-			if (stompClient != null) {
-				stompClient.disconnect();
-			}
-			$scope.data.status = 2;
-		}
+		// window.onresize = function(){
+        // 	changeFrameHeight();
+        // }
 
-		$scope.send = function() {
-			stompClient.send("/websocket/send", {}, JSON.stringify({
-				'message' : $scope.data.message
-			}));
-		}
-		
-		
+		window.setInterval("changeFrameHeight()", 200);
 
-		setTimeout(function(){
-			$scope.connect();
-			if(socket != null){
-				socket.onclose = function()
-		        { 
-		           // 关闭 websocket
-			        	console.log("=======closed=======");
-			        	$scope.data.status = 2;
-			        	$scope.$apply();
-		        };
-			}
-		}, 0);
-		
-	});
-	
-	function changeFrameHeight(){
-        var ifm= document.getElementById("mainiframe");
-        ifm.height=document.documentElement.clientHeight;
-    }
-	
-    window.onresize = function(){
-		changeFrameHeight();
-	}
-
-    window.setInterval("changeFrameHeight()", 200);
-
-    /*]]>*/
-</script>
+		/*]]>*/
+	</script>
 </head>
 <body ng-app="websocket" ng-controller="MainController">
 
@@ -135,7 +143,8 @@
 	</div>
 	
 	<div ng-show="data.status == 1 && data.server.url != ''">
-		<iframe id="mainiframe" ng-src="{{data.server.url}}" name="mainiframe" width="100%" onload="this.height=mainiframe.document.body.scrollHeight" frameborder="0"></iframe>
+		<div style="position:absolute; left: 85%; top :20px; padding-top: 15px;"><img src="/03.png" /></div>
+		<iframe id="mainiframe" ng-src="{{data.server.url}}" name="mainiframe" width="100%" frameborder="0" allowTransparency="true" ></iframe>
 	</div>
 </body>
 </html>

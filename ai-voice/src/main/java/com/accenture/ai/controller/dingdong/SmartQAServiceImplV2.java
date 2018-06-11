@@ -28,7 +28,7 @@ public class SmartQAServiceImplV2{
 	private static final LogAgent LOGGER = LogAgent.getLogAgent(SmartQAServiceImplV2.class);
 
 	private static final String NO_PLEASE_REPLY_MESSAGE = "你是否有新的问题需要询问我？如果是的话请加上请问哦";
-	private static final String NO_PLEASE_REPLY_END_MESSAGE = "您问的问题不包含请问，服务已断开，谢谢";
+	private static final String NO_PLEASE_REPLY_END_MESSAGE = "您问的问题不包含请问，服务已断开，请重新唤醒小哲同学，谢谢";
 	private static final String REQUEST_PARAMS_ERROR = "请求数据错误，请联系管理员，谢谢";
 	private int noPleaseCount = 0;
 
@@ -132,7 +132,7 @@ public class SmartQAServiceImplV2{
 
 		if (StringUtils.isEmpty(any) && StringUtils.isEmpty(sequence) && StringUtils.isEmpty(back)) {
 			
-			buildDingdongInfo(result,"请告诉我你要干嘛，比如 叮咚叮咚 让小哲同学告诉我 如何填写时间成本");
+			buildDingdongInfo(result,"请告诉我你要干嘛，比如 请问如何填写时间成本");
 			
 		} else if (isSecond(sequence)) {
 			int index = NumberUtil.chineseNumber2Int(sequence);
@@ -239,7 +239,7 @@ public class SmartQAServiceImplV2{
             String title = answers.get(index - 1);
             LOGGER.info("get detail answer by title:" + title);
             ArticleDTO articleDetail = articleService.getArticleDetailFromContext(title);
-            LOGGER.info("the detail answer is:" + (Objects.isNull(articleDetail) ? "" : articleDetail.getContent()));
+            LOGGER.info("the detail answer is:" + (Objects.isNull(articleDetail) ? "" : articleDetail.getReadContent()));
 
 			if (articleDetail != null){
                 articleService.recordAndSendArticles(any,Arrays.asList(articleDetail));

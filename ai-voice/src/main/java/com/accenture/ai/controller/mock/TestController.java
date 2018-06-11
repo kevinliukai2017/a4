@@ -188,6 +188,13 @@ public class TestController {
 	    return GSON.toJson(articleResultContex.getRecordArticles());
     }
 
+    @RequestMapping(value = "/removeCategories",method = RequestMethod.GET)
+    @ResponseBody
+    public String removeCategories(){
+        articleResultContex.setCategories(Collections.emptyList());
+        return GSON.toJson(articleResultContex);
+    }
+
     @RequestMapping(value = "/articlesContext",method = RequestMethod.GET)
     @ResponseBody
     public String getArticlesContext(){

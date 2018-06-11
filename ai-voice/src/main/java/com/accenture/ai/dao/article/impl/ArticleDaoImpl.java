@@ -35,7 +35,7 @@ public class ArticleDaoImpl implements ArticleDao {
     private final static String QUERY_ARTICLE_BY_QUESTIONS = "SELECT article1.ID as id, article1.post_title as title, article1.post_content as content, article1.guid as url, article1.post_excerpt as excerpt, " +
             "article2.ID as re_id, article2.post_title as re_title, article2.post_content as re_content, article2.guid as re_url, article2.post_excerpt as re_excerpt " +
             "FROM wp_posts AS article1 LEFT JOIN wp_yarpp_related_cache ON article1.ID=wp_yarpp_related_cache.reference_ID " +
-            "LEFT JOIN wp_posts AS article2 ON article2.ID=wp_yarpp_related_cache.ID WHERE article1.post_status = 'publish' AND article1.post_title = :questions";
+            "LEFT JOIN wp_posts AS article2 ON article2.ID=wp_yarpp_related_cache.ID WHERE article1.post_status = 'publish' AND article2.post_status = 'publish' AND article1.post_title = :questions";
 
 
     private final static String QUERY_ARTICLE_BY_WORDS = "SELECT article1.ID as id, article1.post_title as title, article1.post_content as content, article1.guid as url, " +
@@ -46,7 +46,7 @@ public class ArticleDaoImpl implements ArticleDao {
             "LEFT JOIN wp_term_taxonomy ON wp_terms.term_id=wp_term_taxonomy.term_id " +
             "LEFT JOIN wp_yarpp_related_cache ON article1.ID=wp_yarpp_related_cache.reference_ID " +
             "LEFT JOIN wp_posts AS article2 ON article2.ID=wp_yarpp_related_cache.ID " +
-            "WHERE article1.post_status = 'publish' AND wp_term_taxonomy.taxonomy='post_tag' AND wp_terms.name IN (:keyWords) " +
+            "WHERE article1.post_status = 'publish' AND article2.post_status = 'publish' AND wp_term_taxonomy.taxonomy IN ('post_tag','category') AND wp_terms.name IN (:keyWords) " +
             "GROUP BY article1.ID,article2.ID ORDER BY count desc";
 
     private final static String QUERY_ALL_CATEGORIES = "SELECT category.term_id as category_id, category.name as category_name, " +
@@ -106,18 +106,23 @@ public class ArticleDaoImpl implements ArticleDao {
     @Override
     public List<ArticleDTO> getArticleByWords(String questions, List<String> words) {
 
+        final List<String> keyWords = new ArrayList<>();
+        if (!CollectionUtils.isEmpty(words)){
+            keyWords.addAll(words);
+        }
+        keyWords.add(questions);
 
         LOGGER.info("ArticleDaoImpl.getArticleByWords questions:"+questions +", key words" + words.toString());
+
         Map<String, Object> paramMap = new HashMap<String, Object>();
-        paramMap.put("keyWords",words);
+        paramMap.put("keyWords",keyWords);
         paramMap.put("questions",questions);
 
         List<Map<String,Object>> articleMap = namedParameterJdbcTemplate.query(QUERY_ARTICLE_BY_QUESTIONS,paramMap,new ArticleDTOMapper());
 
         if (CollectionUtils.isEmpty(articleMap)){
-            articleMap = namedParameterJdbcTemplate.query(QUERY_ARTICLE_BY_WORDS,paramMap,new ArticleDTOMapper());
-        }else {
             LOGGER.info("can not get the articles by title, will try to get the articles use the key words");
+            articleMap = namedParameterJdbcTemplate.query(QUERY_ARTICLE_BY_WORDS,paramMap,new ArticleDTOMapper());
         }
 
 //        final StringBuilder stringBuilder = new StringBuilder();

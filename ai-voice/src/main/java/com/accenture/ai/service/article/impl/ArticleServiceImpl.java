@@ -72,7 +72,7 @@ public class ArticleServiceImpl implements ArticleService{
                 if (StringUtils.isNotEmpty(articleDTO.getExcerpt())){
                     articleDTO.setExcerpt(articleDTO.getExcerpt() + stringBuilder.toString());
                 }else{
-                    articleDTO.setContent(articleDTO.getContent() + stringBuilder.toString());
+                    articleDTO.setReadContent(articleDTO.getContent() + stringBuilder.toString());
                 }
             }
 
@@ -157,7 +157,7 @@ public class ArticleServiceImpl implements ArticleService{
             if (StringUtils.isNotEmpty(articleDTOs.get(0).getExcerpt())){
                 result =  articleDTOs.get(0).getExcerpt();
             }else{
-                result = articleDTOs.get(0).getContent();
+                result = articleDTOs.get(0).getReadContent();
             }
         } else {
             for (ArticleDTO articleDTO : articleDTOs) {

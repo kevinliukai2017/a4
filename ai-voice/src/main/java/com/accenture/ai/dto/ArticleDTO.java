@@ -7,6 +7,7 @@ public class ArticleDTO {
     private Long id;
 	private String title;
 	private String content;
+	private String readContent;
 	private String excerpt;
 	private String url;
 	private List<ArticleDTO> relatedArticles;
@@ -33,6 +34,14 @@ public class ArticleDTO {
 
 	public void setContent(String content) {
 		this.content = content;
+	}
+
+	public String getReadContent() {
+		return readContent;
+	}
+
+	public void setReadContent(String readContent) {
+		this.readContent = readContent;
 	}
 
 	public String getUrl() { return url; }

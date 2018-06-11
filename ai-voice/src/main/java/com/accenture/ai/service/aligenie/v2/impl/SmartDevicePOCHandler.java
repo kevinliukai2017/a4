@@ -137,7 +137,7 @@ public class SmartDevicePOCHandler implements AligenieHandler {
             socketStatusContex.setTitleAndUrl(any, ARTICLE_DETAIL_URL);
             //send contex to customer client
             webSocketServiceImpl.sendContexToClient();
-			result.setReply(articleDTOs.get(0).getContent());
+			result.setReply(articleDTOs.get(0).getReadContent());
 			result.setResultType(ResultType.ASK_INF);
 		} else {
 			String titles = "";
@@ -182,7 +182,7 @@ public class SmartDevicePOCHandler implements AligenieHandler {
             String title = answers.get(index - 1);
             LOGGER.info("get detail answer by title:" + title);
             ArticleDTO articleDetail = getArticleDetailFromContex(title);
-            LOGGER.info("the detail answer is:" + articleDetail == null ? "" : articleDetail.getContent());
+            LOGGER.info("the detail answer is:" + articleDetail == null ? "" : articleDetail.getReadContent());
 
 			if (articleDetail != null){
                 articleResultContex.setArticles(Arrays.asList(articleDetail));
@@ -190,7 +190,7 @@ public class SmartDevicePOCHandler implements AligenieHandler {
                 //send contex to customer client
                 webSocketServiceImpl.sendContexToClient();
 
-			    return articleDetail.getContent();
+			    return articleDetail.getReadContent();
             }
             else{
                 LOGGER.info("can not get detail answer by title:" + title);
