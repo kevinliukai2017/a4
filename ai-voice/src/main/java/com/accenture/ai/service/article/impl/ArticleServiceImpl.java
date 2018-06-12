@@ -158,8 +158,10 @@ public class ArticleServiceImpl implements ArticleService{
         } else if (articleDTOs.size() == 1) {
             if (StringUtils.isNotEmpty(articleDTOs.get(0).getReadExcerpt())){
                 result =  articleDTOs.get(0).getReadExcerpt();
-            }else{
+            }else if(StringUtils.isNotEmpty(articleDTOs.get(0).getReadContent())){
                 result = articleDTOs.get(0).getReadContent();
+            }else{
+                result = articleDTOs.get(0).getContent();
             }
         } else {
             for (ArticleDTO articleDTO : articleDTOs) {

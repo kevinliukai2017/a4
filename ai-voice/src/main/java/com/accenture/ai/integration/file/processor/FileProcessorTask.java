@@ -180,7 +180,7 @@ public class FileProcessorTask {
             // validate the line
             String validateResult = validateLine(line);
             if (StringUtils.isNotEmpty(validateResult)){
-                LOGGER.error("Fail to validate the line:" + line + " errorMessage:" + validateResult);
+                LOGGER.error("Fail to validate the line number:" + i + "line:" + line + " errorMessage:" + validateResult);
                 ArticleImportErrorData errorData = buildImportErrorData(line,validateResult,Long.valueOf(i));
                 errorList.add(errorData);
                 continue;

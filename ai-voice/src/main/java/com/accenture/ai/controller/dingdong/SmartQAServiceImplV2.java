@@ -30,6 +30,7 @@ public class SmartQAServiceImplV2{
 	private static final String NO_PLEASE_REPLY_MESSAGE = "你是否有新的问题需要询问我？如果是的话请加上请问哦";
 	private static final String NO_PLEASE_REPLY_END_MESSAGE = "您问的问题不包含请问，服务已断开，请重新唤醒小哲同学，谢谢";
 	private static final String REQUEST_PARAMS_ERROR = "请求数据错误，请联系管理员，谢谢";
+	private static final String END_SESSION_MESSAGE = "已退出，谢谢";
 	private int noPleaseCount = 0;
 
 	@Autowired
@@ -46,7 +47,20 @@ public class SmartQAServiceImplV2{
 		    return result;
         }
 
+        // if the status is end, we should close this session
+        if ("END".equals(taskQuery.getStatus())){
+			LOGGER.info("The request status is END, will end this session");
+			buildspecialDingdongInfo(result,taskQuery,END_SESSION_MESSAGE,true);
+			return result;
+		}
+
 		Map<String, String> paramMap = taskQuery.getSlots();
+
+		if ("LAUNCH".equals(taskQuery.getStatus()) && MapUtils.isEmpty(paramMap)){
+			LOGGER.info("The request status is LAUNCH, will end this session");
+			buildspecialDingdongInfo(result,taskQuery,NO_PLEASE_REPLY_MESSAGE,true);
+			return result;
+		}
 
 		if(MapUtils.isEmpty(paramMap)){
 			LOGGER.info("The paramMap(slots) is null, will return empty content----------check the reqeust");
@@ -183,7 +197,7 @@ public class SmartQAServiceImplV2{
 				LOGGER.info("后退索引为：" + (index + 1) + "size:" + getDialogFromSession(taskQuery).size());
 				if(index != -1 && index + 1 <  getDialogFromSession(taskQuery).size()){
 					reply =getDialogFromSession(taskQuery).get(index + 1).getReplyUtterance() + "_";
-                    articleService.getAndSendArticlesFromContext(reply);
+					articleService.getAndSendArticlesFromContext(reply);
 				}else{
 					LOGGER.info("历史记录里未找到：" + record);
 				}

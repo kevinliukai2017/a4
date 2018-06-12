@@ -192,7 +192,7 @@ public class TestController {
     @ResponseBody
     public String removeCategories(){
         articleResultContex.setCategories(Collections.emptyList());
-        return GSON.toJson(articleResultContex);
+        return "success";
     }
 
     @RequestMapping(value = "/articlesContext",method = RequestMethod.GET)
